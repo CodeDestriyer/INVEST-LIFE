@@ -1,132 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Home, Bed, Bath, Maximize, X, Phone } from 'lucide-react';
+import { Search, Home, Bed, Bath, Maximize, X, Phone, Plus, Minus, Building2 } from 'lucide-react';
 
-// Данные объектов (Каталог)
 const propertiesData = [
-  {
-    id: 1,
-    title: "Apartamento de Lujo en Marbella",
-    price: 450000,
-    type: "Apartamento",
-    rooms: 3,
-    baths: 2,
-    area: 120,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-    description: "Превосходные апартаменты с видом на море. Полностью меблированы, кондиционер, бассейн в жилом комплексе."
-  },
-  {
-    id: 2,
-    title: "Villa Moderna en Altea",
-    price: 890000,
-    type: "Villa",
-    rooms: 5,
-    baths: 4,
-    area: 350,
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=80",
-    description: "Современная вилла с панорамным остеклением, собственным садом и приватным бассейном. Элитный район."
-  },
-  {
-    id: 3,
-    title: "Ático en el Centro de Madrid",
-    price: 620000,
-    type: "Atico",
-    rooms: 2,
-    baths: 1,
-    area: 85,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-    description: "Уютный аттик в историческом центре. Огромная терраса 40м2, дизайнерский ремонт, лифт."
-  }
+  { id: 1, title: "Villa Enorme en Marbella", price: 450000, type: "Villa", mode: "Venta", rooms: 4, baths: 3, area: 250, image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800", description: "Роскошная вилла для продажи. Полная приватность." },
+  { id: 2, title: "Piso Moderno en Barcelona", price: 1200, type: "Apartamento", mode: "Alquiler", rooms: 2, baths: 1, area: 75, image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800", description: "Светлая квартира в аренду в центре города." },
+  { id: 3, title: "Ático Exclusivo en Madrid", price: 620000, type: "Atico", mode: "Venta", rooms: 3, baths: 2, area: 110, image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800", description: "Аттик с террасой на крыше. Продажа." },
+  { id: 4, title: "Estudio en Valencia", price: 850, type: "Apartamento", mode: "Alquiler", rooms: 1, baths: 1, area: 45, image: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800", description: "Студия для долгосрочной аренды." }
 ];
 
 export default function App() {
-  const [filteredProperties, setFilteredProperties] = useState(propertiesData);
-  const [selectedProperty, setSelectedProperty] = useState(null); // Для модального окна
-  const [filters, setFilters] = useState({ type: '', maxPrice: '' });
+  const [mode, setMode] = useState('Venta'); // 'Venta' (Продажа) или 'Alquiler' (Аренда)
+  const [maxPrice, setMaxPrice] = useState(500000);
+  const [filteredProperties, setFilteredProperties] = useState([]);
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
-  // Логика фильтрации
   useEffect(() => {
-    let result = propertiesData.filter(item => {
-      return (filters.type === '' || item.type === filters.type) &&
-             (filters.maxPrice === '' || item.price <= parseInt(filters.maxPrice));
-    });
+    const result = propertiesData.filter(item => item.mode === mode && item.price <= maxPrice);
     setFilteredProperties(result);
-  }, [filters]);
+  }, [mode, maxPrice]);
+
+  const adjustPrice = (amount) => setMaxPrice(prev => Math.max(0, prev + amount));
 
   return (
     <div style={styles.app}>
-      {/* Header */}
       <header style={styles.header}>
         <div style={styles.container}>
-          <h1 style={styles.logo}>Invest<span>Life</span></h1>
-          <nav style={styles.nav}>
-            <a href="#">Catálogo</a>
-            <a href="#">Servicios</a>
-            <button style={styles.contactBtn}>Contactar</button>
-          </nav>
+          <div style={styles.headerContent}>
+            <h1 style={styles.logo}><Building2 /> Invest<span>Life</span></h1>
+            <div style={styles.modeTabs}>
+              <button onClick={() => {setMode('Venta'); setMaxPrice(500000)}} style={mode === 'Venta' ? styles.activeTab : styles.tab}>Продажа</button>
+              <button onClick={() => {setMode('Alquiler'); setMaxPrice(2000)}} style={mode === 'Alquiler' ? styles.activeTab : styles.tab}>Аренда</button>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Hero & Filters */}
       <section style={styles.hero}>
         <div style={styles.container}>
-          <h2 style={styles.heroTitle}>Найдите свой дом в Испании</h2>
-          <div style={styles.filterBar}>
-            <select 
-              onChange={(e) => setFilters({...filters, type: e.target.value})}
-              style={styles.select}
-            >
-              <option value="">Все типы</option>
-              <option value="Apartamento">Апартаменты</option>
-              <option value="Villa">Виллы</option>
-              <option value="Atico">Аттики</option>
-            </select>
-            <input 
-              type="number" 
-              placeholder="Цена до (€)" 
-              style={styles.input}
-              onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
-            />
-            <button style={styles.searchBtn}><Search size={20} /> Buscar</button>
+          <h2 style={styles.heroTitle}>{mode === 'Venta' ? 'Покупка недвижимости' : 'Аренда жилья'}</h2>
+          <div style={styles.filterBox}>
+            <p style={styles.filterLabel}>Макс. цена: <span style={styles.priceValue}>{maxPrice.toLocaleString()} €</span></p>
+            <div style={styles.priceControls}>
+              <button onClick={() => adjustPrice(-1000)} style={styles.priceBtn}><Minus size={16}/> 1000</button>
+              <div style={styles.priceBar}><div style={{...styles.priceFill, width: `${(maxPrice/1000000)*100}%`}}></div></div>
+              <button onClick={() => adjustPrice(1000)} style={styles.priceBtn}><Plus size={16}/> 1000</button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Catalog */}
       <main style={styles.container}>
         <div style={styles.grid}>
-          {filteredProperties.map(prop => (
+          {filteredProperties.length > 0 ? filteredProperties.map(prop => (
             <div key={prop.id} style={styles.card} onClick={() => setSelectedProperty(prop)}>
-              <img src={prop.image} alt={prop.title} style={styles.cardImg} />
-              <div style={styles.cardBody}>
-                <span style={styles.price}>{prop.price.toLocaleString()} €</span>
+              <div style={styles.badge}>{prop.mode === 'Venta' ? 'Продажа' : 'Аренда'}</div>
+              <img src={prop.image} style={styles.cardImg} alt="property" />
+              <div style={styles.cardInfo}>
+                <p style={styles.cardPrice}>{prop.price.toLocaleString()} €{prop.mode === 'Alquiler' && '/мес'}</p>
                 <h3 style={styles.cardTitle}>{prop.title}</h3>
-                <div style={styles.cardIcons}>
-                  <span><Bed size={16} /> {prop.rooms}</span>
-                  <span><Bath size={16} /> {prop.baths}</span>
-                  <span><Maximize size={16} /> {prop.area} m²</span>
+                <div style={styles.cardSpecs}>
+                  <span><Bed size={16}/> {prop.rooms}</span>
+                  <span><Bath size={16}/> {prop.baths}</span>
+                  <span><Maximize size={16}/> {prop.area}м²</span>
                 </div>
               </div>
             </div>
-          ))}
+          )) : <p style={{textAlign:'center', gridColumn:'1/-1'}}>Ничего не найдено в этом бюджете...</p>}
         </div>
       </main>
 
-      {/* Модальное окно (Доп инфа) */}
       {selectedProperty && (
         <div style={styles.overlay} onClick={() => setSelectedProperty(null)}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <button style={styles.closeBtn} onClick={() => setSelectedProperty(null)}><X /></button>
             <img src={selectedProperty.image} style={styles.modalImg} />
-            <div style={styles.modalContent}>
+            <div style={styles.modalBody}>
               <h2 style={styles.modalTitle}>{selectedProperty.title}</h2>
-              <p style={styles.modalPrice}>{selectedProperty.price.toLocaleString()} €</p>
               <p style={styles.modalDesc}>{selectedProperty.description}</p>
-              <div style={styles.modalSpecs}>
-                <div style={styles.specItem}><strong>Тип:</strong> {selectedProperty.type}</div>
-                <div style={styles.specItem}><strong>Комнаты:</strong> {selectedProperty.rooms}</div>
-                <div style={styles.specItem}><strong>Площадь:</strong> {selectedProperty.area} м²</div>
-              </div>
-              <button style={styles.callBtn}><Phone size={18} /> Заказать звонок</button>
+              <button style={styles.mainBtn}><Phone size={20}/> Связаться с агентом</button>
             </div>
           </div>
         </div>
@@ -136,33 +87,35 @@ export default function App() {
 }
 
 const styles = {
-  app: { fontFamily: "'Inter', sans-serif", backgroundColor: '#f8fafc', minHeight: '100vh', color: '#1e293b' },
-  container: { maxWidth: '1200px', margin: '0 auto', padding: '0 20px' },
-  header: { backgroundColor: '#fff', padding: '20px 0', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 100 },
-  logo: { fontSize: '24px', fontWeight: 'bold', margin: 0, color: '#2563eb' },
-  nav: { display: 'flex', alignItems: 'center', gap: '30px', float: 'right', marginTop: '-30px' },
-  contactBtn: { backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer' },
-  hero: { padding: '60px 0', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#fff', textAlign: 'center' },
-  heroTitle: { fontSize: '36px', marginBottom: '30px' },
-  filterBar: { backgroundColor: '#fff', padding: '10px', borderRadius: '12px', display: 'flex', gap: '10px', maxWidth: '800px', margin: '0 auto' },
-  select: { flex: 1, padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', outline: 'none' },
-  input: { flex: 1, padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', outline: 'none' },
-  searchBtn: { backgroundColor: '#1e293b', color: '#fff', border: 'none', padding: '0 25px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '30px', padding: '50px 0' },
-  card: { backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', cursor: 'pointer', transition: '0.3s' },
-  cardImg: { width: '100%', height: '240px', objectFit: 'cover' },
-  cardBody: { padding: '20px' },
-  price: { fontSize: '20px', fontWeight: 'bold', color: '#2563eb' },
-  cardTitle: { fontSize: '18px', margin: '10px 0' },
-  cardIcons: { display: 'flex', gap: '15px', color: '#64748b', fontSize: '14px' },
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { backgroundColor: '#fff', width: '90%', maxWidth: '600px', borderRadius: '20px', overflow: 'hidden', position: 'relative' },
-  closeBtn: { position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', padding: '5px', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' },
-  modalImg: { width: '100%', height: '300px', objectFit: 'cover' },
-  modalContent: { padding: '30px' },
-  modalTitle: { margin: 0, fontSize: '24px' },
-  modalPrice: { fontSize: '22px', color: '#2563eb', fontWeight: 'bold', margin: '10px 0' },
-  modalDesc: { color: '#64748b', lineHeight: '1.6' },
-  modalSpecs: { display: 'flex', gap: '20px', margin: '20px 0', padding: '15px 0', borderTop: '1px solid #eee' },
-  callBtn: { width: '100%', backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '10px' }
+  app: { fontFamily: "'Inter', sans-serif", backgroundColor: '#f0f2f5', minHeight: '100vh' },
+  container: { maxWidth: '1400px', margin: '0 auto', padding: '0 30px' },
+  header: { backgroundColor: '#fff', padding: '15px 0', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 10 },
+  headerContent: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  logo: { display: 'flex', alignItems: 'center', gap: '10px', color: '#2563eb', margin: 0, fontSize: '26px' },
+  modeTabs: { display: 'flex', backgroundColor: '#f1f5f9', borderRadius: '12px', padding: '4px' },
+  tab: { padding: '10px 25px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: '600', color: '#64748b' },
+  activeTab: { padding: '10px 25px', border: 'none', backgroundColor: '#fff', borderRadius: '10px', color: '#2563eb', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer', fontWeight: 'bold' },
+  hero: { padding: '80px 0', background: '#1e293b', color: '#fff', textAlign: 'center' },
+  heroTitle: { fontSize: '42px', marginBottom: '40px', fontWeight: '800' },
+  filterBox: { backgroundColor: 'rgba(255,255,255,0.05)', padding: '30px', borderRadius: '24px', maxWidth: '600px', margin: '0 auto', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' },
+  filterLabel: { margin: '0 0 15px 0', fontSize: '18px' },
+  priceValue: { color: '#60a5fa', fontWeight: 'bold', fontSize: '22px' },
+  priceControls: { display: 'flex', alignItems: 'center', gap: '20px' },
+  priceBtn: { backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 15px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' },
+  priceBar: { flex: 1, height: '6px', backgroundColor: '#334155', borderRadius: '3px', overflow: 'hidden' },
+  priceFill: { height: '100%', backgroundColor: '#2563eb', transition: '0.3s' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '40px', padding: '60px 0' },
+  card: { backgroundColor: '#fff', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'transform 0.3s', position: 'relative' },
+  badge: { position: 'absolute', top: '20px', left: '20px', backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', padding: '5px 15px', borderRadius: '20px', backdropFilter: 'blur(5px)', fontSize: '12px' },
+  cardImg: { width: '100%', height: '280px', objectFit: 'cover' },
+  cardInfo: { padding: '25px' },
+  cardPrice: { fontSize: '24px', fontWeight: '800', color: '#2563eb', margin: 0 },
+  cardTitle: { fontSize: '20px', margin: '10px 0', color: '#1e293b' },
+  cardSpecs: { display: 'flex', gap: '20px', color: '#64748b' },
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' },
+  modal: { backgroundColor: '#fff', maxWidth: '900px', width: '100%', borderRadius: '30px', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' },
+  modalImg: { width: '100%', height: '400px', objectFit: 'cover' },
+  modalBody: { padding: '40px' },
+  mainBtn: { width: '100%', padding: '20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px' },
+  closeBtn: { position: 'absolute', top: '20px', right: '20px', backgroundColor: '#fff', border: 'none', borderRadius: '50%', padding: '10px', cursor: 'pointer' }
 };
