@@ -2,7 +2,7 @@ import './App.css'
 import React, { useState, useEffect } from 'react';
 
 // Стили CSS
-const styles = `
+const styles = 
 * {
   margin: 0;
   padding: 0;
@@ -526,9 +526,9 @@ body {
     grid-template-columns: 1fr;
   }
 }
-`;
+;
 
-// Header Component
+  Header Component
 const Header = () => {
   return (
     <header className="header">
