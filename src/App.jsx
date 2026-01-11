@@ -19,43 +19,43 @@ const DB = [
   { id: 10, title: "Piso Moderno Ruzafa", price: 1350, type: "Apartamento", mode: "Alquiler", rooms: 2, baths: 2, area: 95, city: "Valencia", tags: ["Trendy"], image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1000", desc: "Квартира в самом модном районе Валенсии. Рядом рынок Рузафа и лучшие бары." },
 ];
 
-// --- ВСПОМОГАТЕЛЬНЫЕ КОМПОНЕНТЫ ---
-const Navbar = ({ mode, setMode, scrollTo }) => (
-  <nav style={styles.nav}>
-    <div style={styles.containerWide}>
-      <div style={styles.navFlex}>
-        <div style={styles.logo} onClick={() => window.scrollTo(0,0)}>
-          <Building2 size={32} color="#2563eb" />
-          <span>INVEST<b style={{color:'#1e293b'}}>LIFE</b></span>
-        </div>
-        <div style={styles.navLinks}>
-          <button onClick={() => scrollTo('catalog')} style={styles.linkBtn}>Каталог</button>
-          <button onClick={() => scrollTo('about')} style={styles.linkBtn}>О нас</button>
-          <button onClick={() => scrollTo('services')} style={styles.linkBtn}>Услуги</button>
-          <button onClick={() => scrollTo('contacts')} style={styles.linkBtn}>Контакты</button>
-        </div>
-        <div style={styles.modeToggle}>
-          <button 
-            onClick={() => setMode('Venta')} 
-            style={mode === 'Venta' ? styles.tabActive : styles.tab}
-          >Продажа</button>
-          <button 
-            onClick={() => setMode('Alquiler')} 
-            style={mode === 'Alquiler' ? styles.tabActive : styles.tab}
-          >Аренда</button>
-        </div>
-      </div>
-    </div>
-  </nav>
-);
 
-const SectionTitle = ({ title, subtitle }) => (
-  <div style={styles.sectionHeader}>
-    <h2 style={styles.sectionTitle}>{title}</h2>
-    <div style={styles.titleLine}></div>
-    <p style={styles.sectionSubtitle}>{subtitle}</p>
-  </div>
-);
+
+// --- ОСНОВНОЕ ПРИЛОЖЕНИЕ ---
+export default function App() {
+  const [mode, setMode] = useState('Venta');
+  const [maxPrice, setMaxPrice] = useState(mode === 'Venta' ? 2000000 : 3000);
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [searchCity, setSearchCity] = useState('');
+
+  // Сброс цены при смене режима
+  useEffect(() => {
+    setMaxPrice(mode === 'Venta' ? 2000000 : 3000);
+  }, [mode]);
+
+  const filteredItems = useMemo(() => {
+    return DB.filter(item => 
+      item.mode === mode && 
+      item.price <= maxPrice &&
+      (searchCity === '' || item.city.toLowerCase().includes(searchCity.toLowerCase()))
+    );
+  }, [mode, maxPrice, searchCity]);
+
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const adjustPrice = (amount) => {
+    setMaxPrice(prev => Math.max(0, prev + amount));
+  };
+
+  return (
+    <div style={styles.app}>
+      <Navbar mode={mode} setMode={setMode} scrollTo={scrollTo} />
+
+      {/* HERO SECTION */}
+  
 
 // --- ОСНОВНОЕ ПРИЛОЖЕНИЕ ---
 export default function App() {
@@ -293,6 +293,52 @@ const styles = {
   app: { fontFamily: "'Plus Jakarta Sans', sans-serif", backgroundColor: '#f8fafc', color: '#1e293b' },
   container: { maxWidth: '1200px', margin: '0 auto', padding: '0 20px' },
   containerWide: { maxWidth: '1440px', margin: '0 auto', padding: '0 40px' },
+  // Дополнения к объекту styles
+const styles = {
+  // ... (предыдущие стили) ...
+  
+  logoIcon: {
+    backgroundColor: '#2563eb',
+    padding: '8px',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  navRight: { display: 'flex', alignItems: 'center', gap: '20px' },
+  navLinksDesktop: { display: 'flex', gap: '30px', '@media (max-width: 900px)': { display: 'none' } },
+  burger: { 
+    display: 'none', // По умолчанию скрыт, включается медиа-запросом в реальном CSS
+    flexDirection: 'column', gap: '6px', background: 'none', border: 'none', cursor: 'pointer' 
+  },
+  burgerLine: { width: '25px', height: '2px', backgroundColor: '#1e293b', transition: '0.3s' },
+  mobileMenu: {
+    position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#fff',
+    padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', borderBottom: '1px solid #e2e8f0'
+  },
+  mobileLink: { padding: '15px', border: 'none', background: '#f8fafc', borderRadius: '10px', fontWeight: 'bold' },
+  
+  // Testimonials
+  testimonialCard: { 
+    backgroundColor: '#fff', padding: '30px', borderRadius: '24px', 
+    boxShadow: '0 10px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' 
+  },
+  testimonialText: { fontStyle: 'italic', color: '#475569', lineHeight: '1.6', marginBottom: '20px' },
+  testimonialUser: { display: 'flex', alignItems: 'center', gap: '12px' },
+  userAvatar: { 
+    width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e2e8f0', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#2563eb' 
+  },
+  
+  // Features
+  featureItem: { display: 'flex', gap: '20px', marginBottom: '25px' },
+  featureIcon: { 
+    minWidth: '50px', height: '50px', borderRadius: '15px', backgroundColor: '#eff6ff', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center' 
+  },
+  featureTitle: { margin: '0 0 5px 0', fontSize: '18px', fontWeight: '700' },
+  featureDesc: { margin: 0, color: '#64748b', fontSize: '15px', lineHeight: '1.5' },
+};
   
   // NAV
   nav: { backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 1000, borderBottom: '1px solid #e2e8f0', padding: '15px 0' },
