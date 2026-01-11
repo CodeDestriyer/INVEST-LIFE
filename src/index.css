@@ -78,3 +78,73 @@ body {
 }
 
 .p-btn:hover { background: #f1f5f9; }
+
+.navbar {
+  height: 70px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mode-toggle {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 30px;
+}
+
+.tab, .tab-active {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.tab { background: none; color: #64748b; }
+.tab-active { background: #fff; color: #2563eb; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.burger-btn {
+  display: none; /* Скрыт на ПК */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .nav-controls { display: none; } /* Прячем обычные кнопки на мобиле */
+  .burger-btn { display: block; }  /* Показываем бургер */
+}
+
+.mobile-menu {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 15px;
+  border-bottom: 2px solid #2563eb;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
