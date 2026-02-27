@@ -1860,6 +1860,19 @@
 
 </div>
 
+<!-- ===== МІНІ-ВІКНО ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ ===== -->
+<div class="modal" id="confirmDeleteModal">
+  <div class="modal-content" style="max-width:360px; padding:1.5rem; text-align:center;">
+    <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚠️</div>
+    <div style="font-size:1.1rem; font-weight:600; margin-bottom:0.3rem;">Видалити ліда?</div>
+    <div id="confirmDeleteText" style="font-size:0.85rem; color:#888; margin-bottom:1.2rem;">ID: —</div>
+    <div style="display:flex; gap:0.5rem;">
+      <button id="confirmDeleteCancel" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; background:#f5f5f5; cursor:pointer; font-size:0.9rem; font-weight:500;">Скасувати</button>
+      <button id="confirmDeleteOk" style="flex:1; padding:10px; border:none; border-radius:8px; background:#e74c3c; color:white; cursor:pointer; font-size:0.9rem; font-weight:600;">Так, видалити</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== МОДАЛЬНЕ ВІКНО ДОДАВАННЯ ===== -->
 
 <!-- ===== МОДАЛЬНЕ ВІКНО РЕДАГУВАННЯ ===== -->
@@ -3533,6 +3546,29 @@
     document.body.style.overflow = 'auto';
   }
 
+  // ⭐ КАСТОМНЕ ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ
+  function confirmDeleteLead(leadId) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('confirmDeleteModal');
+      document.getElementById('confirmDeleteText').textContent = 'Лід #' + leadId + ' буде позначений як ВИДАЛЕНО';
+      modal.classList.add('active');
+
+      const ok = document.getElementById('confirmDeleteOk');
+      const cancel = document.getElementById('confirmDeleteCancel');
+
+      function cleanup() {
+        modal.classList.remove('active');
+        ok.removeEventListener('click', onOk);
+        cancel.removeEventListener('click', onCancel);
+      }
+      function onOk() { cleanup(); resolve(true); }
+      function onCancel() { cleanup(); resolve(false); }
+
+      ok.addEventListener('click', onOk);
+      cancel.addEventListener('click', onCancel);
+    });
+  }
+
   // ⭐ М'ЯКЕ ВИДАЛЕННЯ ЛІДА
   function handleSoftDelete(leadId, rowIndex) {
     showLoading('⏳ Видаляю ліда...');
@@ -3922,12 +3958,13 @@
     
     // ⭐ ОБРОБНИК ВИДАЛЕННЯ ЛІДА
     document.querySelectorAll('.realty-lead-row .delete-lead-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
         const leadId = this.dataset.leadId;
         const rowIndex = this.dataset.rowIndex;
-        if (confirm('❗ Видалити ліда ' + leadId + '?')) {
+        const confirmed = await confirmDeleteLead(leadId);
+        if (confirmed) {
           handleSoftDelete(leadId, rowIndex);
         }
       });
@@ -4182,12 +4219,13 @@
     
     // ⭐ ОБРОБНИК ВИДАЛЕННЯ ЛІДА ОРЕНДИ
     document.querySelectorAll('.rent-lead-row .delete-lead-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
         const leadId = this.dataset.leadId;
         const rowIndex = this.dataset.rowIndex;
-        if (confirm('❗ Видалити ліда ' + leadId + '?')) {
+        const confirmed = await confirmDeleteLead(leadId);
+        if (confirmed) {
           handleSoftDelete(leadId, rowIndex);
         }
       });
