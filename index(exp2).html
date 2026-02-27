@@ -151,11 +151,14 @@
         }
 
         /* ⭐ КНОПКИ РЕДАГУВАННЯ / ВИДАЛЕННЯ ЛІДІВ */
+        td:has(.lead-actions) {
+            min-width: 180px;
+            white-space: nowrap;
+        }
         .lead-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
-            justify-content: flex-end;
+            gap: 4px;
         }
         .btn-details-realty,
         .btn-details {
@@ -168,6 +171,7 @@
             font-size: 0.7rem !important;
             white-space: nowrap;
             transition: background 0.2s ease;
+            flex-shrink: 0;
         }
         .btn-details-realty:hover,
         .btn-details:hover {
@@ -187,6 +191,7 @@
             justify-content: center;
             box-shadow: none;
             overflow: hidden;
+            flex-shrink: 0;
         }
         .btn-edit-lead .btn-ico,
         .btn-delete-lead .btn-ico {
@@ -196,7 +201,7 @@
         }
         .btn-edit-lead {
             background: #f39c12;
-            margin-left: 16px;
+            margin-left: 24px;
         }
         .btn-edit-lead:hover {
             background: #f5b041;
