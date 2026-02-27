@@ -3794,13 +3794,14 @@
     // ⭐ СОХРАНЯЮ LEADS В ГЛОБАЛЬНЫЙ МАССИВ
     leadsCache = leads;
     
-    // ⭐ СОРТУВАННЯ: Нові ліди завжди зверху
+    // ⭐ СОРТУВАННЯ: Нові ліди зверху, всередині — новіші першими (по rowIndex desc)
     leads.sort((a, b) => {
       const aNew = isLeadNew(a) ? 1 : 0;
       const bNew = isLeadNew(b) ? 1 : 0;
-      return bNew - aNew;
+      if (bNew !== aNew) return bNew - aNew;
+      return (b.rowIndex || 0) - (a.rowIndex || 0);
     });
-    
+
     // ⭐ Рахую кількість нових лідів для сигналу в дашборді
     let newLeadsCount = 0;
     
@@ -4055,13 +4056,14 @@
 
     leadsCache = leads;
     
-    // ⭐ СОРТУВАННЯ: Нові ліди завжди зверху
+    // ⭐ СОРТУВАННЯ: Нові ліди зверху, всередині — новіші першими (по rowIndex desc)
     leads.sort((a, b) => {
       const aNew = isLeadNew(a) ? 1 : 0;
       const bNew = isLeadNew(b) ? 1 : 0;
-      return bNew - aNew;
+      if (bNew !== aNew) return bNew - aNew;
+      return (b.rowIndex || 0) - (a.rowIndex || 0);
     });
-    
+
     let newLeadsCount = 0;
     
     tbody.innerHTML = leads.map((lead, index) => {
