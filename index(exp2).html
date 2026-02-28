@@ -1531,8 +1531,11 @@
             .rent-pill {
                 min-width: 80px;
             }
+            .rent-pill .dropdown-arrow {
+                display: none;
+            }
 
-            /* Оренда dropdown: фіксований, поверх всього */
+            /* Оренда dropdown: фіксований, справа */
             .rent-dropdown-menu {
                 position: fixed !important;
                 top: auto !important;
@@ -1557,6 +1560,10 @@
             .section-title {
                 font-size: 1rem;
                 margin: 0;
+            }
+            #leadsTitle {
+                font-size: 1.2rem !important;
+                font-weight: 800;
             }
 
             /* --- ДАШБОРД / МЕНЕДЖЕРИ / ЛІДИ: заголовок-бар --- */
@@ -2266,6 +2273,13 @@
             cursor: pointer;
             font-size: 18px;
             color: #1F4E78;
+            padding: 4px;
+            line-height: 1;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           " onclick="togglePasswordVisibility()">👁️</button>
         </div>
       </div>
@@ -2284,7 +2298,8 @@
         transition: transform 0.2s;
         -webkit-appearance: none;
         touch-action: manipulation;
-      " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"
+      onclick="document.getElementById('emailInput').blur(); document.getElementById('passwordInput').blur(); this.closest('form').requestSubmit();">
         🔵 Увійти в систему
       </button>
     </form>
@@ -2432,8 +2447,8 @@
 
     <!-- ===== ТАБЛИЦЯ ЛІДІВ ===== -->
     <section>
-        <h2 class="section-title" id="leadsTitle">📋 Ліди</h2>
-        
+        <h2 class="section-title" id="leadsTitle" style="margin-bottom: 0.8rem;">📋 Ліди</h2>
+
         <!-- Toolbar з мультивибірними фільтрами -->
         <div class="toolbar" id="toolbar" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
             <div style="display: flex; gap: 0.5rem; align-items: center; flex-grow: 1;">
@@ -3074,7 +3089,7 @@
     e.preventDefault();
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
-    const btn = e.target.querySelector('button');
+    const btn = e.target.querySelector('button[type="submit"]');
     
     btn.disabled = true;
     btn.textContent = '⏳ Перевіряю...';
@@ -5552,15 +5567,13 @@
   function togglePasswordVisibility() {
     const passwordInput = document.getElementById('passwordInput');
     const toggleBtn = document.getElementById('togglePasswordBtn');
-    
+
     if (passwordInput.type === 'password') {
-      // Показуємо пароль
       passwordInput.type = 'text';
-      toggleBtn.textContent = '👁️‍🗨️'; // Закритий очей
+      toggleBtn.textContent = '🙈';
     } else {
-      // Сховуємо пароль
       passwordInput.type = 'password';
-      toggleBtn.textContent = '👁️'; // Відкритий очей
+      toggleBtn.textContent = '👁️';
     }
   }
 
