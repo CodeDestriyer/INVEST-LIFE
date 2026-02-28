@@ -1342,19 +1342,24 @@
         .mobile-card-days.overdue { color: #e74c3c; }
         .mobile-card-days.on-time { color: #00B050; }
 
+        /* Верхній рядок: ID зліва + Джерело справа */
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
         .mobile-card-id {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: #1F4E78;
             font-weight: 700;
-            position: absolute;
-            top: 0.4rem;
-            right: 0.6rem;
             background: #e8f0fe;
-            padding: 1px 6px;
+            padding: 2px 8px;
             border-radius: 6px;
             cursor: pointer;
             user-select: none;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .mobile-card-id:active {
             background: #4472C4;
@@ -1362,14 +1367,15 @@
         }
 
         .mobile-card-source {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: #888;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 40%;
+            max-width: 55%;
             text-align: right;
+            flex-shrink: 1;
         }
 
         /* Деталі в мобільній картці */
@@ -1495,6 +1501,7 @@
                 margin: 0 !important;
                 margin-left: 0 !important;
                 overflow-x: auto;
+                overflow-y: visible;
                 -webkit-overflow-scrolling: touch;
                 flex-wrap: nowrap;
                 scrollbar-width: none;
@@ -1517,13 +1524,19 @@
                 box-shadow: 0 0 8px rgba(255,255,255,0.3);
             }
 
-            /* Оренда: нормальний dropdown на мобілці */
+            /* Оренда dropdown: фіксований, поверх всього */
             .rent-dropdown-menu {
-                min-width: 150px;
+                position: fixed !important;
+                top: auto !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                z-index: 2000 !important;
+                min-width: 200px;
+                border-radius: 12px;
             }
             .rent-option {
-                font-size: 0.8rem !important;
-                padding: 8px 14px !important;
+                font-size: 0.9rem !important;
+                padding: 12px 18px !important;
             }
 
             /* --- КОНТЕЙНЕР --- */
@@ -5454,6 +5467,16 @@
   function toggleRentDropdown() {
     const dropdown = document.getElementById('rentDropdown');
     dropdown.classList.toggle('open');
+
+    // На мобілці: позиціонуємо dropdown під кнопкою Оренда
+    if (dropdown.classList.contains('open') && window.innerWidth <= 768) {
+      const pill = document.getElementById('pill-Оренда');
+      const menu = document.getElementById('rentDropdownMenu');
+      if (pill && menu) {
+        const rect = pill.getBoundingClientRect();
+        menu.style.top = (rect.bottom + 6) + 'px';
+      }
+    }
   }
   
   function closeRentDropdown() {
@@ -7199,7 +7222,7 @@
     height: 100vh;
     background: white;
     box-shadow: -2px 0 10px rgba(0,0,0,0.15);
-    z-index: 998;
+    z-index: 1100;
     overflow-y: auto;
     transform: translateX(100%);
     transition: transform 0.3s ease;
@@ -7492,16 +7515,19 @@
             html += '<div class="' + cardClasses + '" data-lead-id="' + leadId +
                 '" data-lead-index="' + leadIndex + '" data-is-rent="' + (isRent ? '1' : '0') + '">';
 
-            // ID — видний, копіюється при натисканні
+            // Ряд 0: ID зліва + Джерело справа (окремий рядок, нічого не налазить)
+            html += '<div class="mobile-card-header">';
             html += '<span class="mobile-card-id" onclick="event.stopPropagation(); navigator.clipboard.writeText(\'' + escapeHtml(id) + '\'); this.textContent=\'Скопійовано!\'; var el=this; setTimeout(function(){el.textContent=\'#' + escapeHtml(id) + '\';},1200);">#' + escapeHtml(id) + '</span>';
-
-            // Ряд 1: Ім'я + Джерело
-            html += '<div class="mobile-card-row">';
-            html += '<span class="mobile-card-name">' + escapeHtml(name) + '</span>';
             if (source) html += '<span class="mobile-card-source">' + escapeHtml(source) + '</span>';
             html += '</div>';
 
-            // Ряд 2: Телефон + Етап
+            // Ряд 1: Ім'я
+            html += '<div class="mobile-card-row">';
+            html += '<span class="mobile-card-name">' + escapeHtml(name) + '</span>';
+            if (stage) html += '<span class="mobile-card-stage">' + escapeHtml(stage) + '</span>';
+            html += '</div>';
+
+            // Ряд 2: Телефон + Тип · Менеджер
             html += '<div class="mobile-card-row">';
             if (phone) html += '<span class="mobile-card-phone">' + escapeHtml(phone) + '</span>';
             html += '<span class="mobile-card-meta">';
@@ -7510,11 +7536,10 @@
             html += '</span>';
             html += '</div>';
 
-            // Ряд 3: Бюджет + Етап + Днів
+            // Ряд 3: Бюджет · Район + Днів
             html += '<div class="mobile-card-row mobile-card-bottom">';
             html += '<span class="mobile-card-budget">' + (budget ? escapeHtml(budget) : '') +
                 (district ? ' · ' + escapeHtml(district) : '') + '</span>';
-            if (stage) html += '<span class="mobile-card-stage">' + escapeHtml(stage) + '</span>';
             if (daysLeft) {
                 html += '<span class="mobile-card-days ' + daysClass + '">' +
                     escapeHtml(daysLeft) + ' дн.</span>';
