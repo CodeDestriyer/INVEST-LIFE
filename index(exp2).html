@@ -3281,10 +3281,22 @@
     setTimeout(() => {
       const dashboardContent = document.getElementById('dashboardContent');
       const toggleBtn = document.getElementById('toggleDashboard');
-      
-      if (dashboardCollapsed && dashboardContent && toggleBtn) {
-        if (!document.body.classList.contains('dashboard-collapsed')) {
-          toggleDashboard();
+
+      if (dashboardContent && toggleBtn) {
+        if (window.innerWidth <= 768) {
+          // На мобілці — гарантуємо згорнутий стан (не toggle, а прямо)
+          dashboardContent.classList.add('collapsed');
+          toggleBtn.textContent = '+';
+          document.body.classList.add('dashboard-collapsed');
+          // Менеджери теж згорнуті
+          const mgContent = document.getElementById('managersContent');
+          const mgBtn = document.getElementById('toggleManagers');
+          if (mgContent) mgContent.style.display = 'none';
+          if (mgBtn) mgBtn.textContent = '+';
+        } else if (dashboardCollapsed) {
+          if (!document.body.classList.contains('dashboard-collapsed')) {
+            toggleDashboard();
+          }
         }
       }
     }, 800);
@@ -5892,8 +5904,15 @@
     setTimeout(() => {
       const dashboardContent = document.getElementById('dashboardContent');
       const toggleBtn = document.getElementById('toggleDashboard');
-      if (dashboardContent && toggleBtn && !dashboardContent.classList.contains('collapsed')) {
-        toggleDashboard();  // Викликаю функцію замість .click()
+      if (dashboardContent && toggleBtn) {
+        if (window.innerWidth <= 768) {
+          // На мобілці — прямо встановлюємо collapsed (без toggle)
+          dashboardContent.classList.add('collapsed');
+          toggleBtn.textContent = '+';
+          document.body.classList.add('dashboard-collapsed');
+        } else if (!dashboardContent.classList.contains('collapsed')) {
+          toggleDashboard();
+        }
       }
     }, 500);
 
@@ -7611,11 +7630,16 @@
                 daysClass = daysNum < 0 ? 'overdue' : 'on-time';
             }
 
-            // Отримуємо джерело з leadsCache
+            // Отримуємо джерело та менеджера з leadsCache (бо колонки можуть бути приховані)
             var source = '';
+            var managerFromCache = '';
             if (typeof leadsCache !== 'undefined' && leadsCache[parseInt(leadIndex)]) {
-                source = leadsCache[parseInt(leadIndex)].source || '';
+                var cachedLead = leadsCache[parseInt(leadIndex)];
+                source = cachedLead.source || '';
+                managerFromCache = cachedLead.manager || '';
             }
+            // Якщо з кешу є — пріоритет кешу, інакше з таблиці
+            if (managerFromCache) manager = managerFromCache;
 
             html += '<div class="' + cardClasses + '" data-lead-id="' + leadId +
                 '" data-lead-index="' + leadIndex + '" data-is-rent="' + (isRent ? '1' : '0') + '">';
