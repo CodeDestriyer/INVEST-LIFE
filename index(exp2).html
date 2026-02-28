@@ -1528,8 +1528,9 @@
             .rent-dropdown-menu {
                 position: fixed !important;
                 top: auto !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
+                right: 1rem !important;
+                left: auto !important;
+                transform: none !important;
                 z-index: 2000 !important;
                 min-width: 200px;
                 border-radius: 12px;
@@ -2347,27 +2348,8 @@
     <!-- ===== ДАШБОРД (КУПІВЛЯ) ===== -->
     <section id="managerSection">
         <div class="dashboard-header">
-            <h1 class="section-title" id="dashboardTitle">📊 Дашборд (Купівля)</h1>
+            <h1 class="section-title" id="dashboardTitle">📊 Дашборд</h1>
             <button class="toggle-btn" id="toggleDashboard" onclick="toggleDashboard()" title="Згорнути/Розгорнути">−</button>
-        </div>
-        
-        <!-- ⭐ НОВОЕ: Чекбокси менеджерів для фільтрації дашборда -->
-        <div id="managerFiltersContainer" style="
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-            border-left: 4px solid #4472C4;
-        ">
-            <span style="font-weight: bold; color: #1F4E78; font-size: 0.9rem;">👥 Менеджери:</span>
-            <div id="managerCheckboxes" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <!-- Заповняється JavaScript -->
-                <div style="color: #999;">⏳ Завантажаю...</div>
-            </div>
         </div>
         
         <div class="dashboard-content" id="dashboardContent">
@@ -2388,6 +2370,35 @@
         </div>
 
     </section>
+
+    <!-- ===== МЕНЕДЖЕРИ (окрема розгортка) ===== -->
+    <section id="managersSection">
+        <div class="dashboard-header">
+            <h2 class="section-title" id="managersTitle">👥 Менеджери</h2>
+            <button class="toggle-btn" id="toggleManagers" onclick="toggleManagers()" title="Згорнути/Розгорнути">−</button>
+        </div>
+        <div id="managersContent">
+            <div id="managerFiltersContainer" style="
+                background: #f5f5f5;
+                padding: 1rem;
+                border-radius: 8px;
+                margin: 0.5rem 0 1rem 0;
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                align-items: center;
+                border-left: 4px solid #4472C4;
+            ">
+                <span style="font-weight: bold; color: #1F4E78; font-size: 0.9rem;">👥 Менеджери:</span>
+                <div id="managerCheckboxes" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="color: #999;">⏳ Завантажаю...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== РОЗДІЛЬНИК ===== -->
+    <hr style="border: none; border-top: 3px solid var(--primary); margin: 1.2rem 0; opacity: 0.25;">
 
     <!-- ===== АДМІН ПАНЕЛЬ ===== -->
 
@@ -3127,10 +3138,10 @@
       
       // Встановлюю заголовки залежно від ролі
       if (role === 'Manager') {
-        document.getElementById('dashboardTitle').textContent = '📊 Мій дашборд';
+        document.getElementById('dashboardTitle').textContent = '📊 Дашборд';
         document.getElementById('leadsTitle').textContent = '📋 Мої ліди';
       } else if (role === 'Admin') {
-        document.getElementById('dashboardTitle').textContent = '📊 Дашборд (Всі ліди)';
+        document.getElementById('dashboardTitle').textContent = '📊 Дашборд';
         document.getElementById('leadsTitle').textContent = '📋 Всі ліди';
       }
       
@@ -3763,40 +3774,35 @@
   function toggleDashboard() {
     const content = document.getElementById('dashboardContent');
     const btn = document.getElementById('toggleDashboard');
-    const managerFilters = document.getElementById('managerFiltersContainer');
-    
-    // Перевіряю що основні елементи існують
+
     if (!content || !btn) {
       console.warn('⚠️ Дашборд елементи не знайдені');
       return;
     }
-    
-    console.log('toggleDashboard called');
-    
+
     if (content.classList.contains('collapsed')) {
-      // Розгортаю дашборд
       content.classList.remove('collapsed');
       btn.textContent = '−';
       document.body.classList.remove('dashboard-collapsed');
-      
-      // ⭐ Показую список менеджерів
-      if (managerFilters) {
-        managerFilters.style.display = 'flex';
-      }
-      
-      console.log('Dashboard expanded');
     } else {
-      // Згортаю дашборд
       content.classList.add('collapsed');
       btn.textContent = '+';
       document.body.classList.add('dashboard-collapsed');
-      
-      // ⭐ Приховую список менеджерів
-      if (managerFilters) {
-        managerFilters.style.display = 'none';
-      }
-      
-      console.log('Dashboard collapsed');
+    }
+  }
+
+  function toggleManagers() {
+    const content = document.getElementById('managersContent');
+    const btn = document.getElementById('toggleManagers');
+
+    if (!content || !btn) return;
+
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      btn.textContent = '−';
+    } else {
+      content.style.display = 'none';
+      btn.textContent = '+';
     }
   }
 
@@ -3812,10 +3818,8 @@
     // Встановлюю тип
     currentDashboardType = type;
     
-    // Оновлюю заголовок дашборду
-    const emoji = type === 'Купівля' ? '🏢' : '🏠';
-    document.getElementById('dashboardTitle').textContent = `📊 ${emoji} ${type}`;
-    
+    // Заголовок дашборду не змінюємо — завжди "Дашборд"
+
     // Оновлюю заголовок таблиці
     const leadsEmoji = type === 'Купівля' ? '🏢' : '🏠';
     document.getElementById('leadsTitle').textContent = `📋 Ліди (${leadsEmoji} ${type})`;
@@ -5439,9 +5443,8 @@
     else if (type === 'Управління') emoji = '🔑';
     else if (type === 'Консультація') emoji = '💬';
     
-    // Оновлюю заголовок дашборду
-    document.getElementById('dashboardTitle').textContent = `📊 ${emoji} ${type}`;
-    
+    // Заголовок дашборду не змінюємо — завжди "Дашборд"
+
     // Оновлюю заголовок таблиці
     document.getElementById('leadsTitle').textContent = `📋 Ліди (${emoji} ${type})`;
     
