@@ -1511,17 +1511,25 @@
             }
             .dashboard-type-pills::-webkit-scrollbar { display: none; }
 
-            /* Яскравіші піли на мобілці */
+            /* Яскравіші піли на мобілці — однаковий розмір, прямокутники */
             .type-pill {
                 background: rgba(255,255,255,0.18) !important;
                 border: 1.5px solid rgba(255,255,255,0.5) !important;
                 backdrop-filter: blur(4px);
-                font-size: 0.75rem;
+                font-size: 0.72rem;
+                min-width: 80px;
+                padding: 0.35rem 0.6rem !important;
+                border-radius: 6px !important;
+                text-align: center;
+                flex-shrink: 0;
             }
             .type-pill.active {
                 background: rgba(255,255,255,0.4) !important;
                 border-color: white !important;
                 box-shadow: 0 0 8px rgba(255,255,255,0.3);
+            }
+            .rent-pill {
+                min-width: 80px;
             }
 
             /* Оренда dropdown: фіксований, поверх всього */
@@ -1547,12 +1555,24 @@
             }
 
             .section-title {
-                font-size: 1.1rem;
+                font-size: 1rem;
+                margin: 0;
             }
 
-            /* --- ДАШБОРД --- */
+            /* --- ДАШБОРД / МЕНЕДЖЕРИ / ЛІДИ: заголовок-бар --- */
             .dashboard-header {
-                padding: 0.5rem 0;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                padding: 0.6rem 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+            .dashboard-header .toggle-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+                border-radius: 6px;
+                flex-shrink: 0;
             }
 
             .dashboard-summary {
@@ -2132,10 +2152,12 @@
   background: linear-gradient(135deg, #1a365d 0%, #2563eb 50%, #0891b2 100%);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   z-index: 10000;
   padding: 20px;
-  overflow: hidden;
+  padding-top: 5vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 ">
   <!-- Декоративні елементи на фоні -->
   <div style="
@@ -2207,28 +2229,32 @@
     <form onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 20px;">
       <div style="display: flex; flex-direction: column;">
         <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1F4E78;">📧 Email</label>
-        <input type="email" id="emailInput" placeholder="voce1987@gmail.com" required style="
+        <input type="email" id="emailInput" placeholder="voce1987@gmail.com" required
+          inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" style="
           width: 100%;
-          padding: 12px 15px;
+          padding: 14px 15px;
           border: 2px solid #ddd;
           border-radius: 8px;
-          font-size: 14px;
+          font-size: 16px;
           box-sizing: border-box;
           transition: border-color 0.3s;
+          -webkit-appearance: none;
         " onfocus="this.style.borderColor='#4472C4'" onblur="this.style.borderColor='#ddd'">
       </div>
 
       <div style="display: flex; flex-direction: column;">
         <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1F4E78;">🔑 Пароль</label>
         <div style="position: relative;">
-          <input type="password" id="passwordInput" placeholder="Введи пароль" required style="
+          <input type="password" id="passwordInput" placeholder="Введи пароль" required
+            autocomplete="current-password" style="
             width: 100%;
-            padding: 12px 45px 12px 15px;
+            padding: 14px 45px 14px 15px;
             border: 2px solid #ddd;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             box-sizing: border-box;
             transition: border-color 0.3s;
+            -webkit-appearance: none;
           " onfocus="this.style.borderColor='#4472C4'" onblur="this.style.borderColor='#ddd'">
           <button type="button" id="togglePasswordBtn" style="
             position: absolute;
@@ -2246,8 +2272,8 @@
 
       <button type="submit" class="btn btn-primary" style="
         width: 100%;
-        padding: 13px;
-        font-size: 16px;
+        padding: 16px;
+        font-size: 17px;
         margin-top: 10px;
         background: linear-gradient(135deg, #1F4E78 0%, #4472C4 100%);
         color: white;
@@ -2256,6 +2282,8 @@
         font-weight: bold;
         cursor: pointer;
         transition: transform 0.2s;
+        -webkit-appearance: none;
+        touch-action: manipulation;
       " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         🔵 Увійти в систему
       </button>
@@ -3081,8 +3109,14 @@
           document.getElementById('userRole').textContent = result.role;
         }
 
+        // Ховаємо секцію Менеджери для не-Admin
+        const managersSection = document.getElementById('managersSection');
+        if (managersSection) {
+          managersSection.style.display = result.role === 'Admin' ? 'block' : 'none';
+        }
+
         showLoginAlert('✅ Успішно! Завантажаю...', 'success');
-        
+
         setTimeout(() => {
           document.getElementById('loginScreen').style.display = 'none';
           currentUser = result;
@@ -3145,14 +3179,23 @@
         document.getElementById('leadsTitle').textContent = '📋 Всі ліди';
       }
       
-      // Якщо менеджер - скрити поле вибору менеджера
+      // Якщо менеджер - скрити поле вибору менеджера + секцію Менеджери
       if (role === 'Manager') {
         const managerGroup = document.getElementById('managerGroup');
         if (managerGroup) {
           managerGroup.style.display = 'none';
         }
+        const managersSection = document.getElementById('managersSection');
+        if (managersSection) {
+          managersSection.style.display = 'none';
+        }
+      } else {
+        const managersSection = document.getElementById('managersSection');
+        if (managersSection) {
+          managersSection.style.display = 'block';
+        }
       }
-      
+
       loadData();
     } else {
       // Показати форму входу
