@@ -2806,51 +2806,60 @@
   // Для сумісності зі старим кодом
   const SCRIPT_URL = SCRIPT_URL_REALTY;
 
-  // ✅ УТИЛІТА: Конвертація дати в формат yyyy-MM-dd для <input type="date">
-  // Використовує ЛОКАЛЬНУ таймзону браузера (щоб не зсувалась дата через UTC)
+  // ✅ УТИЛІТА: Безпечна конвертація дати з ISO/будь-якого формату в yyyy-MM-dd для <input type="date">
+  // Якщо прийде ISO строка (через UTC зсув) — округлює до найближчої доби
   function dateToInputValue(dateStr) {
     if (!dateStr) return '';
     try {
-      if (typeof dateStr === 'string' && dateStr.includes('T')) {
-        const date = new Date(dateStr);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+      var s = String(dateStr);
+      // ISO формат (2026-03-01T22:00:00.000Z) — округлюємо до найближчої доби
+      if (s.indexOf('T') !== -1) {
+        var d = new Date(s);
+        var ms = 86400000; // 24h
+        var rounded = new Date(Math.round(d.getTime() / ms) * ms);
+        var yy = rounded.getUTCFullYear();
+        var mm = ('0' + (rounded.getUTCMonth() + 1)).slice(-2);
+        var dd = ('0' + rounded.getUTCDate()).slice(-2);
+        return yy + '-' + mm + '-' + dd;
       }
-      if (typeof dateStr === 'string' && dateStr.includes('.')) {
-        const parts = dateStr.split('.');
-        if (parts.length === 3) {
-          return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
+      // dd.mm.yyyy → yyyy-mm-dd
+      if (s.indexOf('.') !== -1) {
+        var p = s.split('.');
+        if (p.length === 3) return p[2] + '-' + p[1] + '-' + p[0];
       }
-      return dateStr;
+      // yyyy-mm-dd — вже ОК
+      return s;
     } catch (e) {
-      console.error('dateToInputValue error:', e);
       return '';
     }
   }
 
-  // ✅ УТИЛІТА: Форматування дати для відображення (dd.MM.yyyy)
-  // Використовує ЛОКАЛЬНУ таймзону браузера
+  // ✅ УТИЛІТА: Безпечне форматування дати для відображення (dd.MM.yyyy)
+  // Якщо прийде ISO строка — округлює до найближчої доби (без UTC зсуву)
   function formatDateSafe(dateStr) {
     if (!dateStr) return '—';
     try {
-      if (typeof dateStr === 'string' && dateStr.includes('T')) {
-        const date = new Date(dateStr);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}.${month}.${year}`;
+      var s = String(dateStr);
+      // ISO формат — округлюємо до найближчої доби
+      if (s.indexOf('T') !== -1) {
+        var d = new Date(s);
+        var ms = 86400000;
+        var rounded = new Date(Math.round(d.getTime() / ms) * ms);
+        var dd = ('0' + rounded.getUTCDate()).slice(-2);
+        var mm = ('0' + (rounded.getUTCMonth() + 1)).slice(-2);
+        var yy = rounded.getUTCFullYear();
+        return dd + '.' + mm + '.' + yy;
       }
-      if (typeof dateStr === 'string' && dateStr.includes('.')) {
-        return dateStr.split(' ')[0];
+      // dd.mm.yyyy — вже ОК (обрізаємо час якщо є)
+      if (s.indexOf('.') !== -1) {
+        return s.split(' ')[0];
       }
-      if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.length === 10) {
-        const parts = dateStr.split('-');
-        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+      // yyyy-mm-dd → dd.mm.yyyy
+      if (s.indexOf('-') !== -1 && s.length === 10) {
+        var p = s.split('-');
+        return p[2] + '.' + p[1] + '.' + p[0];
       }
-      return dateStr;
+      return s;
     } catch (e) {
       return dateStr || '—';
     }
@@ -4071,7 +4080,7 @@
     document.getElementById('sidebarManager').value = lead.manager || 'Не назначено';
     document.getElementById('sidebarStage').value = lead.stage || 'Етап_1_Контакт';
     
-    // ✅ КОНВЕРТУЮ ДАТУ В yyyy-MM-dd (локальна таймзона, без UTC-зсуву)
+    // ✅ КОНВЕРТУЮ ДАТУ В yyyy-MM-dd (без UTC-зсуву)
     document.getElementById('sidebarNextContact').value = dateToInputValue(lead.nextContact);
     
     // ⭐ ЗАПОВНЮЮ СТАТУС З ДАНИХ ЛІДІВ (формула из таблицы)
@@ -4519,7 +4528,7 @@
       'Етап_9_Після': '9️⃣ Після'
     };
     
-    // ⭐ ФУНКЦІЯ ФОРМАТУВАННЯ ДАТИ (прибирає час і код)
+    // ⭐ ФУНКЦІЯ ФОРМАТУВАННЯ ДАТИ (використовує глобальну formatDateSafe)
     function formatDate(dateStr) {
       return formatDateSafe(dateStr);
     }
@@ -4992,7 +5001,7 @@
     document.getElementById('rentComment').value = lead.comment || '';
     document.getElementById('rentContactTime').value = lead.contactTime || '';
     
-    // ✅ Дата контакту (локальна таймзона, без UTC-зсуву)
+    // ✅ Дата контакту (без UTC-зсуву)
     document.getElementById('rentNextContact').value = dateToInputValue(lead.nextContact);
     
     // Завантажую менеджерів для оренди

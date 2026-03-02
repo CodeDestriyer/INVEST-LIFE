@@ -1110,7 +1110,7 @@ function buildLeadObject(row, rowIndex) {
     type: row[4],          // E
     manager: row[5],       // F
     stage: row[6],         // G
-    nextContact: row[7],   // H - Дата контакту (РЕДАГУЄТЬСЯ!)
+    nextContact: safeDateStr(row[7]),   // H - Дата контакту (РЕДАГУЄТЬСЯ!)
     daysLeft: row[8],      // I - Днів (формула)
     status: row[9],        // J - Статус (формула)
     budget: row[10],       // K - Бюджет
@@ -1120,11 +1120,21 @@ function buildLeadObject(row, rowIndex) {
     rooms: row[14],        // O - Кімнати
     nextAction: row[15],   // P - Next Action
     comment: row[16],      // Q - Коментар
-    dateAdded: row[17],    // R - Дата додавання
+    dateAdded: safeDateStr(row[17]),    // R - Дата додавання
     fullName: row[18],     // S - ПІБ
     deletedStatus: row[19], // T - Статус (ВИДАЛЕНО)
     rowIndex: rowIndex     // ⭐ Номер рядка в таблиці (унікальний!)
   };
+}
+
+// ✅ Конвертує Date об'єкт в строку yyyy-MM-dd використовуючи таймзону спредшита
+// Це гарантує що фронтенд отримає правильну дату без UTC-зсуву
+function safeDateStr(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(val);
 }
 
 function formatDate(date) {
