@@ -278,6 +278,16 @@ function getAllLeadsNoFilter(manager, userRole) {
 // ПОБУДОВА ОБ'ЄКТУ ЛІДА (ОРЕНДА)
 // ================================
 
+// ✅ Конвертує Date об'єкт в строку yyyy-MM-dd використовуючи таймзону спредшита
+// Це гарантує що фронтенд отримає правильну дату без UTC-зсуву
+function safeDateStr(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(val);
+}
+
 function buildLeadObject(row, rowIndex) {
   return {
     id: row[0],              // A - ID
@@ -287,7 +297,7 @@ function buildLeadObject(row, rowIndex) {
     type: row[4],            // E - Тип (Подобово/Сезонна/Довгострокова/Управління)
     manager: row[5],         // F - Менеджер
     stage: row[6],           // G - Поточний етап
-    nextContact: row[7],     // H - Дата наступного контакту
+    nextContact: safeDateStr(row[7]),     // H - Дата наступного контакту
     daysLeft: row[8],        // I - Днів залишилось (формула)
     status: row[9],          // J - Просрочено? (формула)
     budget: row[10],         // K - Бюджет
@@ -299,7 +309,7 @@ function buildLeadObject(row, rowIndex) {
     district: row[16],       // Q - Район
     nextAction: row[17],     // R - Наступна дія
     comment: row[18],        // S - Коментар
-    dateAdded: row[19],      // T - Дата додавання
+    dateAdded: safeDateStr(row[19]),      // T - Дата додавання
     contactTime: row[20],    // U - Час наступного контакту
     fullName: row[21],       // V - ПІБ
     deletedStatus: row[22],  // W - Статус (ВИДАЛЕНО)
@@ -345,7 +355,7 @@ function addLead(payload) {
     sheet.getRange(nextRow, 17).setValue(payload.district || '');       // Q - Район
     sheet.getRange(nextRow, 18).setValue(payload.nextAction || '');     // R - Наступна дія
     sheet.getRange(nextRow, 19).setValue(payload.comment || '');        // S - Коментар
-    sheet.getRange(nextRow, 20).setValue(new Date());                   // T - Дата додавання
+    sheet.getRange(nextRow, 20).setValue(safeDateStr(new Date()));       // T - Дата додавання
     sheet.getRange(nextRow, 21).setValue(payload.contactTime || '');    // U - Час контакту
     sheet.getRange(nextRow, 22).setValue(payload.fullName || '');       // V - ПІБ
 

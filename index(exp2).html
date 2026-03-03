@@ -154,7 +154,8 @@
         .lead-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            width: 100%;
         }
         .btn-details-realty,
         .btn-details {
@@ -167,6 +168,7 @@
             font-size: 0.7rem !important;
             white-space: nowrap;
             transition: background 0.2s ease;
+            flex-shrink: 0;
         }
         .btn-details-realty:hover,
         .btn-details:hover {
@@ -174,9 +176,7 @@
         }
         .btn-edit-lead,
         .btn-delete-lead {
-            padding: 0;
-            width: 24px;
-            height: 24px;
+            padding: 4px 14px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -186,16 +186,12 @@
             justify-content: center;
             box-shadow: none;
             overflow: hidden;
-        }
-        .btn-edit-lead .btn-ico,
-        .btn-delete-lead .btn-ico {
-            display: inline-block;
-            transform: scale(0.55);
-            line-height: 1;
+            flex-shrink: 0;
+            font-size: 0.75rem;
         }
         .btn-edit-lead {
             background: #f39c12;
-            margin-left: 10px;
+            margin-left: auto;
         }
         .btn-edit-lead:hover {
             background: #f5b041;
@@ -1187,118 +1183,780 @@
             color: #999;
         }
 
-        /* ===== МОБІЛЬНА АДАПТАЦІЯ ===== */
+        /* ============================================================
+           МОБІЛЬНА АДАПТАЦІЯ v3 — аватарка, карточки, FAB
+           Desktop: нічого не змінюється (все всередині @media)
+           ============================================================ */
+
+        /* --- Аватарка-кружок (прихована на десктопі) --- */
+        .mobile-avatar-wrap {
+            display: none;
+            position: relative;
+        }
+        .mobile-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            border: 2px solid rgba(255,255,255,0.6);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0;
+        }
+        .mobile-avatar:hover { background: rgba(255,255,255,0.35); }
+
+        .mobile-avatar-dropdown {
+            display: none;
+            position: absolute;
+            top: 44px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            min-width: 180px;
+            z-index: 1100;
+            overflow: hidden;
+            animation: dropdownSlide 0.2s ease;
+        }
+        .mobile-avatar-dropdown.open { display: block; }
+        .mobile-avatar-info {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .mobile-avatar-info span:first-child {
+            font-weight: 700;
+            color: #1F4E78;
+            font-size: 0.9rem;
+        }
+        .mobile-avatar-role {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        .mobile-avatar-logout {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: none;
+            background: none;
+            text-align: left;
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .mobile-avatar-logout:hover { background: #fef2f2; }
+
+        /* --- Мобільні карточки (приховані на десктопі) --- */
+        .mobile-cards-container {
+            display: none;
+        }
+
+        .mobile-lead-card {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--primary);
+            padding: 0.8rem;
+            margin-bottom: 0.6rem;
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.15s;
+            position: relative;
+        }
+        .mobile-lead-card:active {
+            transform: scale(0.98);
+        }
+        .mobile-lead-card:hover {
+            box-shadow: 0 2px 12px rgba(31,78,120,0.12);
+        }
+        .mobile-lead-card.card-unassigned {
+            border-left-color: #FF0000;
+            background: #fff5f5;
+        }
+        .mobile-lead-card.card-new {
+            border-left-color: #FFC000;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .mobile-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .mobile-card-row + .mobile-card-row { margin-top: 0.35rem; }
+
+        .mobile-card-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
+        }
+        .mobile-card-phone {
+            font-size: 0.8rem;
+            color: #555;
+            font-family: monospace;
+        }
+        .mobile-card-manager {
+            font-size: 0.7rem;
+            color: #1F4E78;
+            font-weight: 600;
+            background: #e8f0fe;
+            padding: 1px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 45%;
+            text-align: right;
+        }
+        .mobile-card-manager-none {
+            color: #e74c3c !important;
+            background: #fde8e8 !important;
+            font-weight: 700;
+        }
+        .mobile-card-meta {
+            font-size: 0.78rem;
+            color: #666;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .mobile-card-meta span {
+            white-space: nowrap;
+        }
+        .mobile-card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mobile-card-budget {
+            font-weight: 700;
+            color: #00B050;
+            font-size: 0.85rem;
+        }
+        .mobile-card-stage {
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            background: #E7F3FF;
+            color: #1F4E78;
+            font-weight: 600;
+        }
+        .mobile-card-days {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .mobile-card-days.overdue { color: #e74c3c; }
+        .mobile-card-days.on-time { color: #00B050; }
+
+        /* Верхній рядок: ID зліва + Джерело справа */
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+        .mobile-card-id {
+            font-size: 0.7rem;
+            color: #1F4E78;
+            font-weight: 700;
+            background: #e8f0fe;
+            padding: 2px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .mobile-card-id:active {
+            background: #4472C4;
+            color: white;
+        }
+
+        .mobile-card-source {
+            font-size: 0.7rem;
+            color: #888;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 55%;
+            text-align: right;
+            flex-shrink: 1;
+        }
+
+        /* Деталі в мобільній картці */
+        .mobile-card-details {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed #d0d7e0;
+            animation: slideDown 0.2s ease;
+        }
+        .mobile-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .mobile-detail-item {
+            background: #f5f7fa;
+            border-radius: 6px;
+            padding: 6px 8px;
+        }
+        .mobile-detail-label {
+            font-size: 0.65rem;
+            color: #888;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .mobile-detail-value {
+            font-size: 0.8rem;
+            color: #1a1a1a;
+            font-weight: 600;
+            display: block;
+            margin-top: 1px;
+            word-break: break-word;
+        }
+        .mobile-detail-comment {
+            grid-column: 1 / -1;
+        }
+        .mobile-card-actions {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .mobile-card-actions-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        .mobile-card-edit-btn {
+            background: #f39c12;
+            color: white;
+        }
+        .mobile-lead-card.card-expanded {
+            box-shadow: 0 4px 16px rgba(31,78,120,0.18);
+            border-left-color: #4472C4;
+        }
+
+        /* --- FAB кнопка (прихована на десктопі) --- */
+        .mobile-fab {
+            display: none;
+            position: fixed;
+            bottom: 1.2rem;
+            right: 1.2rem;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1F4E78 0%, #4472C4 100%);
+            color: white;
+            border: none;
+            font-size: 1.8rem;
+            font-weight: 300;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(31,78,120,0.35);
+            z-index: 900;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            line-height: 1;
+        }
+        .mobile-fab:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 8px rgba(31,78,120,0.25);
+        }
+
+        /* ===== TABLET: max-width 768px ===== */
         @media (max-width: 768px) {
+
+            /* --- НАВБАР --- */
             .navbar {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
+                flex-wrap: wrap;
+                padding: 0.6rem 0.8rem !important;
+                padding-right: 0.8rem !important;
+                gap: 0.4rem;
             }
 
+            .navbar-brand {
+                order: 1;
+                flex-shrink: 0;
+            }
+
+            .dark-mode-toggle {
+                order: 2;
+                margin-left: auto;
+                margin-right: 0.3rem;
+            }
+
+            .mobile-avatar-wrap {
+                display: block;
+                order: 3;
+            }
+
+            /* Ховаємо десктопне меню юзера */
             .navbar-right {
-                flex-direction: column;
+                display: none !important;
+            }
+
+            /* Піли — завжди видимі, горизонтальний скрол, з лівого краю */
+            .dashboard-type-pills {
+                order: 4;
                 width: 100%;
-                gap: 0.5rem;
-            }
-
-            .toolbar {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .search-input, .filter-select {
-                width: 100%;
-            }
-
-            table {
-                font-size: 0.85rem;
-                width: 100%;
-            }
-
-            th, td {
-                padding: 0.75rem 0.5rem;
-                white-space: nowrap;
-            }
-
-            .table-wrapper {
+                margin: 0 !important;
+                margin-left: 0 !important;
                 overflow-x: auto;
-                max-height: 70vh;
-                min-height: auto;
+                overflow-y: visible;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding-bottom: 2px;
+                justify-content: flex-start;
+            }
+            .dashboard-type-pills::-webkit-scrollbar { display: none; }
+
+            /* Яскравіші піли на мобілці — однаковий розмір, прямокутники */
+            .type-pill {
+                background: rgba(255,255,255,0.18) !important;
+                border: 1.5px solid rgba(255,255,255,0.5) !important;
+                backdrop-filter: blur(4px);
+                font-size: 0.72rem;
+                min-width: 80px;
+                padding: 0.35rem 0.6rem !important;
+                border-radius: 6px !important;
+                text-align: center;
+                flex-shrink: 0;
+            }
+            .type-pill.active {
+                background: rgba(255,255,255,0.4) !important;
+                border-color: white !important;
+                box-shadow: 0 0 8px rgba(255,255,255,0.3);
+            }
+            .rent-pill {
+                min-width: 80px;
+            }
+            .rent-pill .dropdown-arrow {
+                display: none;
+            }
+            .rent-dropdown {
+                display: flex !important;
             }
 
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            /* Оренда dropdown: фіксований, справа */
+            .rent-dropdown-menu {
+                position: fixed !important;
+                top: auto !important;
+                right: 1rem !important;
+                left: auto !important;
+                transform: none !important;
+                z-index: 2000 !important;
+                min-width: 200px;
+                border-radius: 12px;
+            }
+            .rent-option {
+                font-size: 0.9rem !important;
+                padding: 12px 18px !important;
             }
 
-            .modal-content {
-                padding: 1.5rem;
-                max-width: 95%;
-            }
-
+            /* --- КОНТЕЙНЕР --- */
             .container {
-                padding: 1rem;
+                padding: 0.6rem 0.4rem;
+                padding-top: calc(0.6rem + 120px);
             }
 
             .section-title {
-                font-size: 1.2rem;
+                font-size: 1rem;
+                margin: 0;
+            }
+            #leadsTitle {
+                font-size: 1.2rem !important;
+                font-weight: 800;
+            }
+
+            /* --- ДАШБОРД / МЕНЕДЖЕРИ / ЛІДИ: заголовок-бар --- */
+            .dashboard-header {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                padding: 0.6rem 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+            .dashboard-header .toggle-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+                border-radius: 6px;
+                flex-shrink: 0;
+            }
+
+            .dashboard-summary {
+                padding: 1rem;
+                gap: 1rem;
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .dashboard-card {
+                grid-template-columns: 1fr auto auto;
+                gap: 0.8rem;
+                padding: 0.8rem 1rem;
+            }
+
+            .dashboard-card-action { display: none; }
+
+            .dashboard-card-count {
+                font-size: 1.1rem;
+                min-width: 40px;
+            }
+
+            .dashboard-card-sum {
+                font-size: 0.95rem;
+                min-width: 90px;
+            }
+
+            /* --- ТУЛБАР --- */
+            .toolbar {
+                flex-wrap: nowrap !important;
+                gap: 0.4rem !important;
+                padding: 0.4rem 0.5rem !important;
+                align-items: center !important;
+            }
+
+            .toolbar > div:first-child {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+            }
+
+            .toolbar > div:last-child {
+                flex-shrink: 0 !important;
+            }
+
+            .search-input {
+                min-width: 0 !important;
+                max-width: none !important;
+                flex: 1 1 auto !important;
+            }
+
+            /* Ховаємо "Колони" і "Додати ліда" (FAB замість них) */
+            .toolbar .btn[onclick="toggleColumnSettings()"],
+            .toolbar .btn[onclick="openAddLead()"] {
+                display: none !important;
+            }
+
+            /* --- ТАБЛИЦЯ: ховаємо, показуємо карточки --- */
+            .table-wrapper {
+                display: none !important;
+            }
+
+            .mobile-cards-container {
+                display: block !important;
+                max-height: calc(100vh - 260px);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 0.2rem;
+            }
+
+            /* --- FAB --- */
+            .mobile-fab {
+                display: flex;
+            }
+
+            /* --- МОДАЛКИ --- */
+            .modal-content {
+                padding: 1.2rem;
+                max-width: 95%;
+                margin: 0.5rem;
+            }
+
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            form > .form-group:nth-child(1),
+            form > .form-group:nth-child(2) {
+                grid-column: span 1;
+            }
+
+            /* --- САЙДБАРИ --- */
+            #editSidebar,
+            #editSidebarRent,
+            #filtersSidebar {
+                width: 100% !important;
+            }
+
+            /* --- ФІЛЬТР-САЙДБАР РЕДИЗАЙН НА МОБІЛЦІ --- */
+            #filtersSidebar {
+                padding-top: 0 !important;
+            }
+            #filtersSidebar #filtersContainer {
+                padding: 1rem 1rem 2rem !important;
+            }
+            #filtersSidebar .filter-dropdown {
+                display: block !important;
+                margin-bottom: 0.3rem;
+            }
+            #filtersSidebar .filter-btn {
+                width: 100% !important;
+                padding: 0.9rem 1rem !important;
+                font-size: 1rem !important;
+                font-weight: 600 !important;
+                border-radius: 10px !important;
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            #filtersSidebar .filter-menu {
+                position: static !important;
+                margin-top: 0.3rem !important;
+                border-radius: 10px !important;
+                max-height: none !important;
+            }
+            #filtersSidebar .filter-option {
+                padding: 0.7rem 1rem !important;
+                font-size: 0.95rem !important;
+            }
+            #filtersSidebar .filter-option input[type="checkbox"] {
+                width: 20px !important;
+                height: 20px !important;
+            }
+            #filtersSidebar .filter-option label {
+                font-size: 0.95rem !important;
+            }
+
+            /* --- ОРЕНДА ДЕТАЛІ --- */
+            .rent-details-content {
+                grid-template-columns: 1fr 1fr !important;
+                padding: 10px !important;
+                gap: 8px !important;
+            }
+
+            /* --- МЕНЕДЖЕР-ФІЛЬТРИ --- */
+            #managerFiltersContainer {
+                flex-direction: column !important;
+            }
+
+            #managerCheckboxes {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+
+            .filter-tags { flex-wrap: wrap; }
+
+            /* --- ЛОГІН ФОРМА НА МОБІЛЦІ --- */
+            #loginScreen {
+                padding: 15px !important;
+                padding-top: 3vh !important;
+            }
+            #loginScreen form input,
+            #loginScreen form button {
+                position: relative;
+                z-index: 5;
             }
         }
 
-        /* ===== МОБІЛЬНА ВЕРСІЯ МАЛИХ ЕКРАНІВ (під 576px) ===== */
+        /* ===== PHONE: max-width 576px ===== */
         @media (max-width: 576px) {
+
+            .navbar {
+                padding: 0.5rem 0.6rem !important;
+            }
+
             .navbar-brand {
                 font-size: 1rem;
             }
 
-            .dashboard-type-pills {
-                gap: 0.3rem;
-            }
-
             .type-pill {
-                padding: 0.5rem 0.8rem;
-                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+                font-size: 0.7rem;
             }
 
-            table {
-                font-size: 0.75rem;
+            /* --- ДАШБОРД --- */
+            .dashboard-summary {
+                grid-template-columns: 1fr;
+                padding: 0.8rem;
+                text-align: center;
             }
 
-            th, td {
-                padding: 0.5rem 0.3rem;
+            .dashboard-card {
+                grid-template-columns: 1fr auto;
+                gap: 0.5rem;
+                padding: 0.6rem 0.8rem;
             }
 
-            .btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.85rem;
+            .dashboard-card-sum { display: none; }
+
+            .dashboard-card-title { font-size: 0.85rem; }
+            .dashboard-card-count { font-size: 1rem; }
+
+            /* --- ТУЛБАР --- */
+            .toolbar {
+                gap: 0.3rem !important;
+                padding: 0.3rem 0.4rem !important;
+            }
+
+            /* Ховаємо "Всі" та "Фільтр" текст — лишаємо іконки */
+            .toolbar button[onclick="resetAllFilters()"] {
+                font-size: 0 !important;
+                padding: 0.4rem !important;
+                min-width: 32px;
+            }
+            .toolbar button[onclick="resetAllFilters()"]::before {
+                content: "🔄";
+                font-size: 1rem;
             }
 
             .search-input {
-                padding: 0.6rem;
-                font-size: 0.9rem;
+                padding: 0.45rem !important;
+                font-size: 0.82rem;
             }
 
-            .toolbar {
-                gap: 0.3rem;
+            .btn {
+                padding: 0.4rem 0.7rem;
+                font-size: 0.78rem;
             }
 
-            .filter-btn {
-                padding: 0.5rem 0.8rem;
-                font-size: 0.8rem;
+            /* --- КАРТОЧКИ --- */
+            .mobile-cards-container {
+                max-height: calc(100vh - 230px);
+            }
+
+            .mobile-lead-card {
+                padding: 0.7rem;
+            }
+
+            /* --- МОДАЛКИ --- */
+            .modal {
+                padding: 0.3rem !important;
             }
 
             .modal-content {
                 padding: 1rem;
                 max-width: 100%;
+                border-radius: 8px;
+                max-height: 95vh;
             }
+
+            .modal-title { font-size: 1.1rem; }
 
             .form-input, .form-select, textarea {
                 padding: 0.5rem;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
 
-            #filtersPanel {
-                display: none !important;
+            .filter-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
             }
+
+            .rent-details-content {
+                grid-template-columns: 1fr !important;
+            }
+
+            .rent-dropdown-menu { min-width: 140px; }
+
+            .mobile-fab {
+                bottom: 1rem;
+                right: 1rem;
+                width: 48px;
+                height: 48px;
+                font-size: 1.6rem;
+            }
+        }
+
+        /* ===== EXTRA SMALL: max-width 400px ===== */
+        @media (max-width: 400px) {
+
+            .navbar {
+                padding: 0.4rem 0.5rem !important;
+            }
+
+            .container {
+                padding: 0.4rem 0.2rem;
+                padding-top: calc(0.4rem + 115px);
+            }
+
+            .section-title { font-size: 0.95rem; }
+
+            .dashboard-summary {
+                padding: 0.7rem;
+                font-size: 0.82rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .dashboard-card {
+                padding: 0.5rem 0.6rem;
+            }
+
+            .toolbar > div { gap: 0.2rem !important; }
+
+            .modal-content { padding: 0.7rem; }
+            .modal-title { font-size: 1rem; }
+
+            .mobile-card-name { font-size: 0.88rem; }
+            .mobile-card-meta { font-size: 0.72rem; }
+        }
+
+        /* ===== DARK MODE для мобільних компонентів ===== */
+        body.dark-mode .mobile-lead-card {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+        body.dark-mode .mobile-lead-card.card-unassigned {
+            background: #2a1a1a;
+        }
+        body.dark-mode .mobile-card-name { color: var(--text-primary); }
+        body.dark-mode .mobile-card-meta { color: var(--text-secondary); }
+        body.dark-mode .mobile-card-phone { color: var(--text-secondary); }
+        body.dark-mode .mobile-card-manager { background: #2a3f5f; color: #8ab4f8; }
+        body.dark-mode .mobile-card-manager-none { background: #4a2020 !important; color: #ff6b6b !important; }
+        body.dark-mode .mobile-card-stage {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        body.dark-mode .mobile-avatar-dropdown {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        body.dark-mode .mobile-avatar-info {
+            border-color: var(--border-color);
+        }
+        body.dark-mode .mobile-avatar-info span:first-child {
+            color: var(--text-primary);
+        }
+        body.dark-mode .mobile-avatar-role { color: var(--text-secondary); }
+        body.dark-mode .mobile-avatar-logout:hover {
+            background: #3a2020;
+        }
+        body.dark-mode .mobile-card-id {
+            background: #2a3f5f;
+            color: #8ab4f8;
+        }
+        body.dark-mode .mobile-card-source {
+            color: var(--text-secondary);
+        }
+        body.dark-mode .mobile-detail-item {
+            background: var(--bg-tertiary);
+        }
+        body.dark-mode .mobile-detail-value {
+            color: var(--text-primary);
+        }
+        body.dark-mode .mobile-detail-label {
+            color: var(--text-secondary);
         }
 
         /* ===== DARK MODE ===== */
@@ -1535,10 +2193,12 @@
   background: linear-gradient(135deg, #1a365d 0%, #2563eb 50%, #0891b2 100%);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   z-index: 10000;
   padding: 20px;
-  overflow: hidden;
+  padding-top: 5vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 ">
   <!-- Декоративні елементи на фоні -->
   <div style="
@@ -1610,28 +2270,32 @@
     <form onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 20px;">
       <div style="display: flex; flex-direction: column;">
         <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1F4E78;">📧 Email</label>
-        <input type="email" id="emailInput" placeholder="voce1987@gmail.com" required style="
+        <input type="email" id="emailInput" placeholder="voce1987@gmail.com" required
+          inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" style="
           width: 100%;
-          padding: 12px 15px;
+          padding: 14px 15px;
           border: 2px solid #ddd;
           border-radius: 8px;
-          font-size: 14px;
+          font-size: 16px;
           box-sizing: border-box;
           transition: border-color 0.3s;
+          -webkit-appearance: none;
         " onfocus="this.style.borderColor='#4472C4'" onblur="this.style.borderColor='#ddd'">
       </div>
 
       <div style="display: flex; flex-direction: column;">
         <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1F4E78;">🔑 Пароль</label>
         <div style="position: relative;">
-          <input type="password" id="passwordInput" placeholder="Введи пароль" required style="
+          <input type="password" id="passwordInput" placeholder="Введи пароль" required
+            autocomplete="current-password" style="
             width: 100%;
-            padding: 12px 45px 12px 15px;
+            padding: 14px 45px 14px 15px;
             border: 2px solid #ddd;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             box-sizing: border-box;
             transition: border-color 0.3s;
+            -webkit-appearance: none;
           " onfocus="this.style.borderColor='#4472C4'" onblur="this.style.borderColor='#ddd'">
           <button type="button" id="togglePasswordBtn" style="
             position: absolute;
@@ -1643,14 +2307,21 @@
             cursor: pointer;
             font-size: 18px;
             color: #1F4E78;
+            padding: 4px;
+            line-height: 1;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           " onclick="togglePasswordVisibility()">👁️</button>
         </div>
       </div>
 
       <button type="submit" class="btn btn-primary" style="
         width: 100%;
-        padding: 13px;
-        font-size: 16px;
+        padding: 16px;
+        font-size: 17px;
         margin-top: 10px;
         background: linear-gradient(135deg, #1F4E78 0%, #4472C4 100%);
         color: white;
@@ -1659,7 +2330,10 @@
         font-weight: bold;
         cursor: pointer;
         transition: transform 0.2s;
-      " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        -webkit-appearance: none;
+        touch-action: manipulation;
+      " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'"
+      onclick="document.getElementById('emailInput').blur(); document.getElementById('passwordInput').blur(); this.closest('form').requestSubmit();">
         🔵 Увійти в систему
       </button>
     </form>
@@ -1696,6 +2370,20 @@
         </div>
     </div>
     
+    <!-- Аватарка-кружок (мобільна версія замість navbar-right) -->
+    <div class="mobile-avatar-wrap" id="mobileAvatarWrap">
+        <button class="mobile-avatar" id="mobileAvatarBtn" aria-label="Профіль">
+            <span id="mobileAvatarInitials">?</span>
+        </button>
+        <div class="mobile-avatar-dropdown" id="mobileAvatarDropdown">
+            <div class="mobile-avatar-info">
+                <span id="mobileAvatarName">Користувач</span>
+                <span class="mobile-avatar-role" id="mobileAvatarRole">Менеджер</span>
+            </div>
+            <button class="mobile-avatar-logout" onclick="logout()">Вихід</button>
+        </div>
+    </div>
+
     <!-- Кнопки типів дашборду -->
     <div class="dashboard-type-pills">
         <!-- НЕРУХОМІСТЬ -->
@@ -1707,9 +2395,7 @@
         
         <!-- ОРЕНДА (dropdown) -->
         <div class="rent-dropdown" id="rentDropdown">
-            <button class="type-pill rent-pill" onclick="toggleRentDropdown()" id="pill-Оренда">
-                🏨 Оренда <span class="dropdown-arrow">▼</span>
-            </button>
+            <button class="type-pill rent-pill" onclick="toggleRentDropdown()" id="pill-Оренда">🏨 Оренда<span class="dropdown-arrow"> ▼</span></button>
             <div class="rent-dropdown-menu" id="rentDropdownMenu">
                 <button class="rent-option" onclick="selectDashboardType('Подобова')">🌙 Подобова</button>
                 <button class="rent-option" onclick="selectDashboardType('Сезонна')">☀️ Сезонна</button>
@@ -1737,30 +2423,11 @@
     <!-- ===== ДАШБОРД (КУПІВЛЯ) ===== -->
     <section id="managerSection">
         <div class="dashboard-header">
-            <h1 class="section-title" id="dashboardTitle">📊 Дашборд (Купівля)</h1>
-            <button class="toggle-btn" id="toggleDashboard" onclick="toggleDashboard()" title="Згорнути/Розгорнути">−</button>
+            <h1 class="section-title" id="dashboardTitle">📊 Дашборд</h1>
+            <button class="toggle-btn" id="toggleDashboard" onclick="toggleDashboard()" title="Згорнути/Розгорнути">+</button>
         </div>
         
-        <!-- ⭐ НОВОЕ: Чекбокси менеджерів для фільтрації дашборда -->
-        <div id="managerFiltersContainer" style="
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-            border-left: 4px solid #4472C4;
-        ">
-            <span style="font-weight: bold; color: #1F4E78; font-size: 0.9rem;">👥 Менеджери:</span>
-            <div id="managerCheckboxes" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <!-- Заповняється JavaScript -->
-                <div style="color: #999;">⏳ Завантажаю...</div>
-            </div>
-        </div>
-        
-        <div class="dashboard-content" id="dashboardContent">
+        <div class="dashboard-content collapsed" id="dashboardContent">
             <div class="dashboard-summary" id="dashboardSummary">
                 <span>
                     <span style="opacity: 0.9; font-size: 0.9rem; text-transform: uppercase;">Всього лідів</span>
@@ -1779,12 +2446,41 @@
 
     </section>
 
+    <!-- ===== МЕНЕДЖЕРИ (окрема розгортка) ===== -->
+    <section id="managersSection">
+        <div class="dashboard-header">
+            <h2 class="section-title" id="managersTitle">👥 Менеджери</h2>
+            <button class="toggle-btn" id="toggleManagers" onclick="toggleManagers()" title="Згорнути/Розгорнути">+</button>
+        </div>
+        <div id="managersContent" style="display: none;">
+            <div id="managerFiltersContainer" style="
+                background: #f5f5f5;
+                padding: 1rem;
+                border-radius: 8px;
+                margin: 0.5rem 0 1rem 0;
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                align-items: center;
+                border-left: 4px solid #4472C4;
+            ">
+                <span style="font-weight: bold; color: #1F4E78; font-size: 0.9rem;">👥 Менеджери:</span>
+                <div id="managerCheckboxes" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="color: #999;">⏳ Завантажаю...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== РОЗДІЛЬНИК ===== -->
+    <hr style="border: none; border-top: 3px solid var(--primary); margin: 1.2rem 0; opacity: 0.25;">
+
     <!-- ===== АДМІН ПАНЕЛЬ ===== -->
 
     <!-- ===== ТАБЛИЦЯ ЛІДІВ ===== -->
     <section>
-        <h2 class="section-title" id="leadsTitle">📋 Ліди</h2>
-        
+        <h2 class="section-title" id="leadsTitle" style="margin-bottom: 0.8rem;">📋 Ліди</h2>
+
         <!-- Toolbar з мультивибірними фільтрами -->
         <div class="toolbar" id="toolbar" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
             <div style="display: flex; gap: 0.5rem; align-items: center; flex-grow: 1;">
@@ -1860,8 +2556,28 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Мобільні карточки (прихований на десктопі) -->
+        <div id="mobileCards" class="mobile-cards-container"></div>
+
     </section>
 
+</div>
+
+<!-- FAB кнопка додавання ліда (мобільна, прихована на десктопі) -->
+<button class="mobile-fab" id="mobileFab" onclick="openAddLead()" aria-label="Додати ліда">+</button>
+
+<!-- ===== МІНІ-ВІКНО ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ ===== -->
+<div class="modal" id="confirmDeleteModal">
+  <div class="modal-content" style="max-width:360px; padding:1.5rem; text-align:center;">
+    <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚠️</div>
+    <div style="font-size:1.1rem; font-weight:600; margin-bottom:0.3rem;">Видалити ліда?</div>
+    <div id="confirmDeleteText" style="font-size:0.85rem; color:#888; margin-bottom:1.2rem;">ID: —</div>
+    <div style="display:flex; gap:0.5rem;">
+      <button id="confirmDeleteCancel" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; background:#f5f5f5; cursor:pointer; font-size:0.9rem; font-weight:500;">Скасувати</button>
+      <button id="confirmDeleteOk" style="flex:1; padding:10px; border:none; border-radius:8px; background:#e74c3c; color:white; cursor:pointer; font-size:0.9rem; font-weight:600;">Так, видалити</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== МОДАЛЬНЕ ВІКНО ДОДАВАННЯ ===== -->
@@ -2089,6 +2805,65 @@
   
   // Для сумісності зі старим кодом
   const SCRIPT_URL = SCRIPT_URL_REALTY;
+
+  // ✅ УТИЛІТА: Безпечна конвертація дати з ISO/будь-якого формату в yyyy-MM-dd для <input type="date">
+  // Якщо прийде ISO строка (через UTC зсув) — округлює до найближчої доби
+  function dateToInputValue(dateStr) {
+    if (!dateStr) return '';
+    try {
+      var s = String(dateStr);
+      // ISO формат (2026-03-01T22:00:00.000Z) — округлюємо до найближчої доби
+      if (s.indexOf('T') !== -1) {
+        var d = new Date(s);
+        var ms = 86400000; // 24h
+        var rounded = new Date(Math.round(d.getTime() / ms) * ms);
+        var yy = rounded.getUTCFullYear();
+        var mm = ('0' + (rounded.getUTCMonth() + 1)).slice(-2);
+        var dd = ('0' + rounded.getUTCDate()).slice(-2);
+        return yy + '-' + mm + '-' + dd;
+      }
+      // dd.mm.yyyy → yyyy-mm-dd
+      if (s.indexOf('.') !== -1) {
+        var p = s.split('.');
+        if (p.length === 3) return p[2] + '-' + p[1] + '-' + p[0];
+      }
+      // yyyy-mm-dd — вже ОК
+      return s;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  // ✅ УТИЛІТА: Безпечне форматування дати для відображення (dd.MM.yyyy)
+  // Якщо прийде ISO строка — округлює до найближчої доби (без UTC зсуву)
+  function formatDateSafe(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      var s = String(dateStr);
+      // ISO формат — округлюємо до найближчої доби
+      if (s.indexOf('T') !== -1) {
+        var d = new Date(s);
+        var ms = 86400000;
+        var rounded = new Date(Math.round(d.getTime() / ms) * ms);
+        var dd = ('0' + rounded.getUTCDate()).slice(-2);
+        var mm = ('0' + (rounded.getUTCMonth() + 1)).slice(-2);
+        var yy = rounded.getUTCFullYear();
+        return dd + '.' + mm + '.' + yy;
+      }
+      // dd.mm.yyyy — вже ОК (обрізаємо час якщо є)
+      if (s.indexOf('.') !== -1) {
+        return s.split(' ')[0];
+      }
+      // yyyy-mm-dd → dd.mm.yyyy
+      if (s.indexOf('-') !== -1 && s.length === 10) {
+        var p = s.split('-');
+        return p[2] + '.' + p[1] + '.' + p[0];
+      }
+      return s;
+    } catch (e) {
+      return dateStr || '—';
+    }
+  }
 
   let currentUser = null;
   let allLeads = [];
@@ -2405,7 +3180,7 @@
     e.preventDefault();
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
-    const btn = e.target.querySelector('button');
+    const btn = e.target.querySelector('button[type="submit"]');
     
     btn.disabled = true;
     btn.textContent = '⏳ Перевіряю...';
@@ -2440,8 +3215,14 @@
           document.getElementById('userRole').textContent = result.role;
         }
 
+        // Ховаємо секцію Менеджери для не-Admin
+        const managersSection = document.getElementById('managersSection');
+        if (managersSection) {
+          managersSection.style.display = result.role === 'Admin' ? 'block' : 'none';
+        }
+
         showLoginAlert('✅ Успішно! Завантажаю...', 'success');
-        
+
         setTimeout(() => {
           document.getElementById('loginScreen').style.display = 'none';
           currentUser = result;
@@ -2497,21 +3278,30 @@
       
       // Встановлюю заголовки залежно від ролі
       if (role === 'Manager') {
-        document.getElementById('dashboardTitle').textContent = '📊 Мій дашборд';
+        document.getElementById('dashboardTitle').textContent = '📊 Дашборд';
         document.getElementById('leadsTitle').textContent = '📋 Мої ліди';
       } else if (role === 'Admin') {
-        document.getElementById('dashboardTitle').textContent = '📊 Дашборд (Всі ліди)';
+        document.getElementById('dashboardTitle').textContent = '📊 Дашборд';
         document.getElementById('leadsTitle').textContent = '📋 Всі ліди';
       }
       
-      // Якщо менеджер - скрити поле вибору менеджера
+      // Якщо менеджер - скрити поле вибору менеджера + секцію Менеджери
       if (role === 'Manager') {
         const managerGroup = document.getElementById('managerGroup');
         if (managerGroup) {
           managerGroup.style.display = 'none';
         }
+        const managersSection = document.getElementById('managersSection');
+        if (managersSection) {
+          managersSection.style.display = 'none';
+        }
+      } else {
+        const managersSection = document.getElementById('managersSection');
+        if (managersSection) {
+          managersSection.style.display = 'block';
+        }
       }
-      
+
       loadData();
     } else {
       // Показати форму входу
@@ -2550,10 +3340,22 @@
     setTimeout(() => {
       const dashboardContent = document.getElementById('dashboardContent');
       const toggleBtn = document.getElementById('toggleDashboard');
-      
-      if (dashboardCollapsed && dashboardContent && toggleBtn) {
-        if (!document.body.classList.contains('dashboard-collapsed')) {
-          toggleDashboard();
+
+      if (dashboardContent && toggleBtn) {
+        if (window.innerWidth <= 768) {
+          // На мобілці — гарантуємо згорнутий стан (не toggle, а прямо)
+          dashboardContent.classList.add('collapsed');
+          toggleBtn.textContent = '+';
+          document.body.classList.add('dashboard-collapsed');
+          // Менеджери теж згорнуті
+          const mgContent = document.getElementById('managersContent');
+          const mgBtn = document.getElementById('toggleManagers');
+          if (mgContent) mgContent.style.display = 'none';
+          if (mgBtn) mgBtn.textContent = '+';
+        } else if (dashboardCollapsed) {
+          if (!document.body.classList.contains('dashboard-collapsed')) {
+            toggleDashboard();
+          }
         }
       }
     }, 800);
@@ -3133,40 +3935,35 @@
   function toggleDashboard() {
     const content = document.getElementById('dashboardContent');
     const btn = document.getElementById('toggleDashboard');
-    const managerFilters = document.getElementById('managerFiltersContainer');
-    
-    // Перевіряю що основні елементи існують
+
     if (!content || !btn) {
       console.warn('⚠️ Дашборд елементи не знайдені');
       return;
     }
-    
-    console.log('toggleDashboard called');
-    
+
     if (content.classList.contains('collapsed')) {
-      // Розгортаю дашборд
       content.classList.remove('collapsed');
       btn.textContent = '−';
       document.body.classList.remove('dashboard-collapsed');
-      
-      // ⭐ Показую список менеджерів
-      if (managerFilters) {
-        managerFilters.style.display = 'flex';
-      }
-      
-      console.log('Dashboard expanded');
     } else {
-      // Згортаю дашборд
       content.classList.add('collapsed');
       btn.textContent = '+';
       document.body.classList.add('dashboard-collapsed');
-      
-      // ⭐ Приховую список менеджерів
-      if (managerFilters) {
-        managerFilters.style.display = 'none';
-      }
-      
-      console.log('Dashboard collapsed');
+    }
+  }
+
+  function toggleManagers() {
+    const content = document.getElementById('managersContent');
+    const btn = document.getElementById('toggleManagers');
+
+    if (!content || !btn) return;
+
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      btn.textContent = '−';
+    } else {
+      content.style.display = 'none';
+      btn.textContent = '+';
     }
   }
 
@@ -3182,10 +3979,8 @@
     // Встановлюю тип
     currentDashboardType = type;
     
-    // Оновлюю заголовок дашборду
-    const emoji = type === 'Купівля' ? '🏢' : '🏠';
-    document.getElementById('dashboardTitle').textContent = `📊 ${emoji} ${type}`;
-    
+    // Заголовок дашборду не змінюємо — завжди "Дашборд"
+
     // Оновлюю заголовок таблиці
     const leadsEmoji = type === 'Купівля' ? '🏢' : '🏠';
     document.getElementById('leadsTitle').textContent = `📋 Ліди (${leadsEmoji} ${type})`;
@@ -3285,24 +4080,8 @@
     document.getElementById('sidebarManager').value = lead.manager || 'Не назначено';
     document.getElementById('sidebarStage').value = lead.stage || 'Етап_1_Контакт';
     
-    // ✅ КОНВЕРТУЮ ДАТУ З ISO ФОРМАТУ В yyyy-MM-dd
-    let dateValue = '';
-    if (lead.nextContact) {
-      try {
-        // Якщо дата в ISO форматі (2026-01-28T22:00:00.000Z)
-        if (lead.nextContact.includes('T')) {
-          const date = new Date(lead.nextContact);
-          dateValue = date.toISOString().split('T')[0]; // Беру тільки yyyy-MM-dd
-        } else {
-          // Якщо уже в правильному форматі
-          dateValue = lead.nextContact;
-        }
-      } catch (e) {
-        console.error('❌ Помилка при конвертації дати:', e);
-        dateValue = '';
-      }
-    }
-    document.getElementById('sidebarNextContact').value = dateValue;
+    // ✅ КОНВЕРТУЮ ДАТУ В yyyy-MM-dd (без UTC-зсуву)
+    document.getElementById('sidebarNextContact').value = dateToInputValue(lead.nextContact);
     
     // ⭐ ЗАПОВНЮЮ СТАТУС З ДАНИХ ЛІДІВ (формула из таблицы)
     document.getElementById('sidebarStatus').value = lead.status || '';
@@ -3537,6 +4316,29 @@
     document.body.style.overflow = 'auto';
   }
 
+  // ⭐ КАСТОМНЕ ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ
+  function confirmDeleteLead(leadId) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('confirmDeleteModal');
+      document.getElementById('confirmDeleteText').textContent = 'Лід #' + leadId + ' буде позначений як ВИДАЛЕНО';
+      modal.classList.add('active');
+
+      const ok = document.getElementById('confirmDeleteOk');
+      const cancel = document.getElementById('confirmDeleteCancel');
+
+      function cleanup() {
+        modal.classList.remove('active');
+        ok.removeEventListener('click', onOk);
+        cancel.removeEventListener('click', onCancel);
+      }
+      function onOk() { cleanup(); resolve(true); }
+      function onCancel() { cleanup(); resolve(false); }
+
+      ok.addEventListener('click', onOk);
+      cancel.addEventListener('click', onCancel);
+    });
+  }
+
   // ⭐ М'ЯКЕ ВИДАЛЕННЯ ЛІДА
   function handleSoftDelete(leadId, rowIndex) {
     showLoading('⏳ Видаляю ліда...');
@@ -3726,31 +4528,9 @@
       'Етап_9_Після': '9️⃣ Після'
     };
     
-    // ⭐ ФУНКЦІЯ ФОРМАТУВАННЯ ДАТИ (прибирає час і код)
+    // ⭐ ФУНКЦІЯ ФОРМАТУВАННЯ ДАТИ (використовує глобальну formatDateSafe)
     function formatDate(dateStr) {
-      if (!dateStr) return '—';
-      try {
-        // Якщо ISO формат (2026-02-03T22:00:00.000Z)
-        if (dateStr.includes('T')) {
-          const date = new Date(dateStr);
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const year = date.getFullYear();
-          return `${day}.${month}.${year}`;
-        }
-        // Якщо вже у форматі dd.mm.yyyy
-        if (dateStr.includes('.')) {
-          return dateStr.split(' ')[0]; // Беру тільки дату без часу
-        }
-        // Якщо yyyy-mm-dd
-        if (dateStr.includes('-') && dateStr.length === 10) {
-          const parts = dateStr.split('-');
-          return `${parts[2]}.${parts[1]}.${parts[0]}`;
-        }
-        return dateStr;
-      } catch (e) {
-        return dateStr || '—';
-      }
+      return formatDateSafe(dateStr);
     }
 
     if (!leads || leads.length === 0) {
@@ -3762,13 +4542,14 @@
     // ⭐ СОХРАНЯЮ LEADS В ГЛОБАЛЬНЫЙ МАССИВ
     leadsCache = leads;
     
-    // ⭐ СОРТУВАННЯ: Нові ліди завжди зверху
+    // ⭐ СОРТУВАННЯ: Нові ліди зверху, всередині — новіші першими (по rowIndex desc)
     leads.sort((a, b) => {
       const aNew = isLeadNew(a) ? 1 : 0;
       const bNew = isLeadNew(b) ? 1 : 0;
-      return bNew - aNew;
+      if (bNew !== aNew) return bNew - aNew;
+      return (b.rowIndex || 0) - (a.rowIndex || 0);
     });
-    
+
     // ⭐ Рахую кількість нових лідів для сигналу в дашборді
     let newLeadsCount = 0;
     
@@ -3814,16 +4595,16 @@
           ${vc.nextContact !== false ? `<td>${formatDate(lead.nextContact)}</td>` : ''}
           ${vc.daysLeft !== false ? `<td>${lead.daysLeft || '—'}</td>` : ''}
           ${vc.status !== false ? `<td>${lead.status || '—'}</td>` : ''}
-          <td>
+          <td style="min-width:200px">
             <div class="lead-actions">
               <button class="btn-details-realty" data-index="${index}">▼ Деталі</button>
-              <button class="btn btn-edit-lead edit-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}"><span class="btn-ico">✏️</span></button>
-              <button class="btn btn-delete-lead delete-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}"><span class="btn-ico">🗑️</span></button>
+              <button class="btn-edit-lead edit-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}">✏️</button>
+              <button class="btn-delete-lead delete-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}">🗑️</button>
             </div>
           </td>
         </tr>
       `;
-      
+
       // ⭐ РЯДОК ДЕТАЛЕЙ ДЛЯ НЕРУХОМОСТІ (прихований за замовчуванням)
       const detailsRow = `
         <tr class="realty-details-row" data-details-for="${index}" style="display: none; background: #f8f9fa;">
@@ -3926,12 +4707,13 @@
     
     // ⭐ ОБРОБНИК ВИДАЛЕННЯ ЛІДА
     document.querySelectorAll('.realty-lead-row .delete-lead-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
         const leadId = this.dataset.leadId;
         const rowIndex = this.dataset.rowIndex;
-        if (confirm('❗ Видалити ліда ' + leadId + '?')) {
+        const confirmed = await confirmDeleteLead(leadId);
+        if (confirmed) {
           handleSoftDelete(leadId, rowIndex);
         }
       });
@@ -3992,26 +4774,7 @@
     };
     
     function formatDate(dateStr) {
-      if (!dateStr) return '—';
-      try {
-        if (dateStr.includes('T')) {
-          const date = new Date(dateStr);
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const year = date.getFullYear();
-          return `${day}.${month}.${year}`;
-        }
-        if (dateStr.includes('.')) {
-          return dateStr.split(' ')[0];
-        }
-        if (dateStr.includes('-') && dateStr.length === 10) {
-          const parts = dateStr.split('-');
-          return `${parts[2]}.${parts[1]}.${parts[0]}`;
-        }
-        return dateStr;
-      } catch (e) {
-        return dateStr || '—';
-      }
+      return formatDateSafe(dateStr);
     }
 
     if (!leads || leads.length === 0) {
@@ -4022,13 +4785,14 @@
 
     leadsCache = leads;
     
-    // ⭐ СОРТУВАННЯ: Нові ліди завжди зверху
+    // ⭐ СОРТУВАННЯ: Нові ліди зверху, всередині — новіші першими (по rowIndex desc)
     leads.sort((a, b) => {
       const aNew = isLeadNew(a) ? 1 : 0;
       const bNew = isLeadNew(b) ? 1 : 0;
-      return bNew - aNew;
+      if (bNew !== aNew) return bNew - aNew;
+      return (b.rowIndex || 0) - (a.rowIndex || 0);
     });
-    
+
     let newLeadsCount = 0;
     
     tbody.innerHTML = leads.map((lead, index) => {
@@ -4065,11 +4829,11 @@
           ${vc.nextContact !== false ? `<td>${formatDate(lead.nextContact)}</td>` : ''}
           ${vc.daysLeft !== false ? `<td>${lead.daysLeft || '—'}</td>` : ''}
           ${vc.status !== false ? `<td>${lead.status || '—'}</td>` : ''}
-          <td>
+          <td style="min-width:200px">
             <div class="lead-actions">
               <button class="btn-details" data-index="${index}">▼ Деталі</button>
-              <button class="btn btn-edit-lead edit-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}"><span class="btn-ico">✏️</span></button>
-              <button class="btn btn-delete-lead delete-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}"><span class="btn-ico">🗑️</span></button>
+              <button class="btn-edit-lead edit-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}">✏️</button>
+              <button class="btn-delete-lead delete-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}">🗑️</button>
             </div>
           </td>
         </tr>
@@ -4186,12 +4950,13 @@
     
     // ⭐ ОБРОБНИК ВИДАЛЕННЯ ЛІДА ОРЕНДИ
     document.querySelectorAll('.rent-lead-row .delete-lead-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
         const leadId = this.dataset.leadId;
         const rowIndex = this.dataset.rowIndex;
-        if (confirm('❗ Видалити ліда ' + leadId + '?')) {
+        const confirmed = await confirmDeleteLead(leadId);
+        if (confirmed) {
           handleSoftDelete(leadId, rowIndex);
         }
       });
@@ -4236,23 +5001,8 @@
     document.getElementById('rentComment').value = lead.comment || '';
     document.getElementById('rentContactTime').value = lead.contactTime || '';
     
-    // Дата контакту
-    if (lead.nextContact) {
-      try {
-        let dateValue = lead.nextContact;
-        if (dateValue.includes('T')) {
-          dateValue = dateValue.split('T')[0];
-        } else if (dateValue.includes('.')) {
-          const parts = dateValue.split('.');
-          if (parts.length === 3) {
-            dateValue = parts[2] + '-' + parts[1] + '-' + parts[0];
-          }
-        }
-        document.getElementById('rentNextContact').value = dateValue;
-      } catch (e) {
-        console.error('Помилка парсингу дати:', e);
-      }
-    }
+    // ✅ Дата контакту (без UTC-зсуву)
+    document.getElementById('rentNextContact').value = dateToInputValue(lead.nextContact);
     
     // Завантажую менеджерів для оренди
     loadRentManagers(lead.manager);
@@ -4500,7 +5250,7 @@
     document.getElementById('editLeadId').value = lead.id;
     document.getElementById('editPhone').value = lead.phone;
     document.getElementById('editStage').value = lead.stage;
-    document.getElementById('editContactDate').value = lead.nextContact || '';
+    document.getElementById('editContactDate').value = dateToInputValue(lead.nextContact);
     document.getElementById('editNextAction').value = lead.nextAction || '';
     document.getElementById('editComment').value = lead.comment || '';
     document.getElementById('editModal').classList.add('active');
@@ -4782,9 +5532,8 @@
     else if (type === 'Управління') emoji = '🔑';
     else if (type === 'Консультація') emoji = '💬';
     
-    // Оновлюю заголовок дашборду
-    document.getElementById('dashboardTitle').textContent = `📊 ${emoji} ${type}`;
-    
+    // Заголовок дашборду не змінюємо — завжди "Дашборд"
+
     // Оновлюю заголовок таблиці
     document.getElementById('leadsTitle').textContent = `📋 Ліди (${emoji} ${type})`;
     
@@ -4794,13 +5543,27 @@
       menu.style.display = 'none';
     }
     
-    // Показую дашборд контент
-    const content = document.getElementById('dashboardContent');
-    if (content && content.classList.contains('collapsed')) {
-      content.classList.remove('collapsed');
-      document.getElementById('toggleDashboard').textContent = '−';
+    // На мобілці — згортаємо дашборд і менеджерів при зміні типу
+    if (window.innerWidth <= 768) {
+      const content = document.getElementById('dashboardContent');
+      if (content && !content.classList.contains('collapsed')) {
+        content.classList.add('collapsed');
+        document.getElementById('toggleDashboard').textContent = '+';
+      }
+      const mgContent = document.getElementById('managersContent');
+      if (mgContent) {
+        mgContent.style.display = 'none';
+        document.getElementById('toggleManagers').textContent = '+';
+      }
+    } else {
+      // На десктопі — розгортаємо дашборд (як було)
+      const content = document.getElementById('dashboardContent');
+      if (content && content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        document.getElementById('toggleDashboard').textContent = '−';
+      }
     }
-    
+
     // Завантажу нові дані
     loadStats();
     loadLeads();
@@ -4810,6 +5573,16 @@
   function toggleRentDropdown() {
     const dropdown = document.getElementById('rentDropdown');
     dropdown.classList.toggle('open');
+
+    // На мобілці: позиціонуємо dropdown під кнопкою Оренда
+    if (dropdown.classList.contains('open') && window.innerWidth <= 768) {
+      const pill = document.getElementById('pill-Оренда');
+      const menu = document.getElementById('rentDropdownMenu');
+      if (pill && menu) {
+        const rect = pill.getBoundingClientRect();
+        menu.style.top = (rect.bottom + 6) + 'px';
+      }
+    }
   }
   
   function closeRentDropdown() {
@@ -4839,15 +5612,13 @@
   function togglePasswordVisibility() {
     const passwordInput = document.getElementById('passwordInput');
     const toggleBtn = document.getElementById('togglePasswordBtn');
-    
+
     if (passwordInput.type === 'password') {
-      // Показуємо пароль
       passwordInput.type = 'text';
-      toggleBtn.textContent = '👁️‍🗨️'; // Закритий очей
+      toggleBtn.textContent = '🙈';
     } else {
-      // Сховуємо пароль
       passwordInput.type = 'password';
-      toggleBtn.textContent = '👁️'; // Відкритий очей
+      toggleBtn.textContent = '👁️';
     }
   }
 
@@ -5120,8 +5891,15 @@
     setTimeout(() => {
       const dashboardContent = document.getElementById('dashboardContent');
       const toggleBtn = document.getElementById('toggleDashboard');
-      if (dashboardContent && toggleBtn && !dashboardContent.classList.contains('collapsed')) {
-        toggleDashboard();  // Викликаю функцію замість .click()
+      if (dashboardContent && toggleBtn) {
+        if (window.innerWidth <= 768) {
+          // На мобілці — прямо встановлюємо collapsed (без toggle)
+          dashboardContent.classList.add('collapsed');
+          toggleBtn.textContent = '+';
+          document.body.classList.add('dashboard-collapsed');
+        } else if (!dashboardContent.classList.contains('collapsed')) {
+          toggleDashboard();
+        }
       }
     }, 500);
 
@@ -6555,7 +7333,7 @@
     height: 100vh;
     background: white;
     box-shadow: -2px 0 10px rgba(0,0,0,0.15);
-    z-index: 998;
+    z-index: 1100;
     overflow-y: auto;
     transform: translateX(100%);
     transition: transform 0.3s ease;
@@ -6702,6 +7480,319 @@
     <div class="loading-spinner">⏳</div>
     <div class="loading-text" id="loadingText">Зберігаю дані...</div>
 </div>
+
+<!-- ===== МОБІЛЬНА АДАПТАЦІЯ v3: аватарка + карточки (окремий скрипт) ===== -->
+<script>
+(function() {
+    'use strict';
+
+    // ============ 1. АВАТАРКА: ініціали + дропдаун ============
+    var avatarBtn = document.getElementById('mobileAvatarBtn');
+    var avatarDropdown = document.getElementById('mobileAvatarDropdown');
+    var avatarInitials = document.getElementById('mobileAvatarInitials');
+    var avatarName = document.getElementById('mobileAvatarName');
+    var avatarRole = document.getElementById('mobileAvatarRole');
+
+    function getInitials(name) {
+        if (!name) return '?';
+        var clean = name.replace(/^👤\s*/, '').trim();
+        var parts = clean.split(/\s+/);
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
+    function syncAvatar() {
+        var nameEl = document.getElementById('userName');
+        var roleEl = document.getElementById('userRole');
+        var rawName = nameEl ? nameEl.textContent.replace(/^👤\s*/, '').trim() : '';
+        var rawRole = roleEl ? roleEl.textContent.trim() : '';
+        if (avatarInitials) avatarInitials.textContent = getInitials(rawName);
+        if (avatarName) avatarName.textContent = rawName || 'Користувач';
+        if (avatarRole) avatarRole.textContent = rawRole || 'Менеджер';
+    }
+
+    // Синхронізуємо при завантаженні + спостерігаємо за змінами userName
+    syncAvatar();
+    var userNameEl = document.getElementById('userName');
+    if (userNameEl) {
+        new MutationObserver(syncAvatar).observe(userNameEl, { childList: true, characterData: true, subtree: true });
+    }
+
+    if (avatarBtn) {
+        avatarBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            avatarDropdown.classList.toggle('open');
+        });
+    }
+    document.addEventListener('click', function() {
+        if (avatarDropdown) avatarDropdown.classList.remove('open');
+    });
+
+    // ============ 2. КАРТОЧКИ ЛІДІВ ============
+    var cardsContainer = document.getElementById('mobileCards');
+    var tbody = document.getElementById('leadsTable');
+
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    function buildCards() {
+        if (!cardsContainer || !isMobile()) return;
+
+        var thead = document.getElementById('leadsTableHead');
+        if (!thead) return;
+
+        // Читаємо заголовки колонок
+        var ths = thead.querySelectorAll('th');
+        var headers = [];
+        for (var i = 0; i < ths.length; i++) {
+            headers.push(ths[i].textContent.trim());
+        }
+
+        // Знаходимо індекси потрібних колонок
+        var colMap = {};
+        var labelMap = {
+            'ID': 'id', 'ПІБ': 'name', 'Телефон': 'phone', 'Тип': 'type',
+            'Менеджер': 'manager', 'Поточний Етап': 'stage', 'Наступний контакт': 'nextContact',
+            'Днів залиш.': 'daysLeft', 'Статус': 'status', 'Бюджет': 'budget',
+            'Район': 'district', 'Дії': 'actions'
+        };
+        for (var h = 0; h < headers.length; h++) {
+            var key = labelMap[headers[h]];
+            if (key) colMap[key] = h;
+        }
+
+        // Шукаємо рядки (тільки основні, без деталей)
+        var rows = tbody.querySelectorAll('tr.realty-lead-row, tr.rent-lead-row');
+        if (rows.length === 0) {
+            // Можливо, ще загружається або немає лідів
+            var allRows = tbody.querySelectorAll('tr');
+            if (allRows.length === 1 && allRows[0].querySelector('td[colspan]')) {
+                cardsContainer.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">' +
+                    allRows[0].querySelector('td').textContent + '</div>';
+                return;
+            }
+            if (allRows.length === 0) {
+                cardsContainer.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">Немає лідів</div>';
+                return;
+            }
+        }
+
+        var html = '';
+        for (var r = 0; r < rows.length; r++) {
+            var row = rows[r];
+            var tds = row.querySelectorAll('td');
+            var leadId = row.getAttribute('data-lead-id') || '';
+            var leadIndex = row.getAttribute('data-lead-index') || '';
+            var isRent = row.classList.contains('rent-lead-row');
+
+            function cellText(key) {
+                var idx = colMap[key];
+                if (idx === undefined || idx >= tds.length) return '';
+                return tds[idx].textContent.trim();
+            }
+
+            var name = cellText('name') || cellText('phone') || 'Без імені';
+            var phone = cellText('phone');
+            var type = cellText('type');
+            var manager = cellText('manager');
+            var stage = cellText('stage');
+            var daysLeft = cellText('daysLeft');
+            var status = cellText('status');
+            var id = cellText('id') || leadId;
+
+            // Бюджет може бути у деталях, беремо якщо є колонка
+            var budget = cellText('budget');
+            var district = cellText('district');
+
+            // Класи карточки
+            var cardClasses = 'mobile-lead-card';
+            if (row.classList.contains('lead-unassigned')) cardClasses += ' card-unassigned';
+            if (row.classList.contains('lead-new')) cardClasses += ' card-new';
+
+            // Днів залишилось — стиль
+            var daysClass = '';
+            var daysNum = parseInt(daysLeft);
+            if (!isNaN(daysNum)) {
+                daysClass = daysNum < 0 ? 'overdue' : 'on-time';
+            }
+
+            // Отримуємо джерело та менеджера з leadsCache (бо колонки можуть бути приховані)
+            var source = '';
+            var managerFromCache = '';
+            if (typeof leadsCache !== 'undefined' && leadsCache[parseInt(leadIndex)]) {
+                var cachedLead = leadsCache[parseInt(leadIndex)];
+                source = cachedLead.source || '';
+                managerFromCache = cachedLead.manager || '';
+            }
+            // Якщо з кешу є — пріоритет кешу, інакше з таблиці
+            if (managerFromCache) manager = managerFromCache;
+
+            html += '<div class="' + cardClasses + '" data-lead-id="' + leadId +
+                '" data-lead-index="' + leadIndex + '" data-is-rent="' + (isRent ? '1' : '0') + '">';
+
+            // Ряд 0: ID зліва + Джерело справа (окремий рядок, нічого не налазить)
+            html += '<div class="mobile-card-header">';
+            html += '<span class="mobile-card-id" onclick="event.stopPropagation(); navigator.clipboard.writeText(\'' + escapeHtml(id) + '\'); this.textContent=\'Скопійовано!\'; var el=this; setTimeout(function(){el.textContent=\'#' + escapeHtml(id) + '\';},1200);">#' + escapeHtml(id) + '</span>';
+            if (source) html += '<span class="mobile-card-source">' + escapeHtml(source) + '</span>';
+            html += '</div>';
+
+            // Ряд 1: Ім'я + Етап
+            html += '<div class="mobile-card-row">';
+            html += '<span class="mobile-card-name">' + escapeHtml(name) + '</span>';
+            if (stage) html += '<span class="mobile-card-stage">' + escapeHtml(stage) + '</span>';
+            html += '</div>';
+
+            // Ряд 2: Телефон + Менеджер (виразно)
+            html += '<div class="mobile-card-row">';
+            if (phone) html += '<span class="mobile-card-phone">' + escapeHtml(phone) + '</span>';
+            var isUnassigned = !manager || manager === '❌ Не назначено' || manager.indexOf('Не назначено') !== -1;
+            if (isUnassigned) {
+                html += '<span class="mobile-card-manager mobile-card-manager-none">не призн.</span>';
+            } else if (manager) {
+                html += '<span class="mobile-card-manager">' + escapeHtml(manager) + '</span>';
+            }
+            html += '</div>';
+
+            // Ряд 3: Бюджет · Район + Днів
+            html += '<div class="mobile-card-row mobile-card-bottom">';
+            html += '<span class="mobile-card-budget">' + (budget ? escapeHtml(budget) : '') +
+                (district ? ' · ' + escapeHtml(district) : '') + '</span>';
+            if (daysLeft) {
+                html += '<span class="mobile-card-days ' + daysClass + '">' +
+                    escapeHtml(daysLeft) + ' дн.</span>';
+            }
+            html += '</div>';
+
+            // Блок деталей (прихований, розгортається по кліку)
+            html += '<div class="mobile-card-details" style="display:none;"></div>';
+
+            html += '</div>';
+        }
+
+        cardsContainer.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    // Обробник кліків на карточки — розгортка деталей (як на ПК)
+    if (cardsContainer) {
+        cardsContainer.addEventListener('click', function(e) {
+            // Не реагуємо на клік по ID (він копіює)
+            if (e.target.classList.contains('mobile-card-id')) return;
+            // Не реагуємо на кнопки редагування/видалення
+            if (e.target.closest('.mobile-card-actions-btn')) return;
+
+            var card = e.target.closest('.mobile-lead-card');
+            if (!card) return;
+
+            var leadIndex = parseInt(card.getAttribute('data-lead-index'));
+            var detailsDiv = card.querySelector('.mobile-card-details');
+            if (!detailsDiv) return;
+
+            // Toggle деталей
+            if (detailsDiv.style.display !== 'none') {
+                detailsDiv.style.display = 'none';
+                card.classList.remove('card-expanded');
+                return;
+            }
+
+            // Закриваю інші відкриті деталі
+            cardsContainer.querySelectorAll('.mobile-card-details').forEach(function(d) {
+                d.style.display = 'none';
+            });
+            cardsContainer.querySelectorAll('.mobile-lead-card').forEach(function(c) {
+                c.classList.remove('card-expanded');
+            });
+
+            // Генерую деталі з leadsCache
+            if (typeof leadsCache !== 'undefined' && leadsCache[leadIndex]) {
+                var lead = leadsCache[leadIndex];
+                var isRent = card.getAttribute('data-is-rent') === '1';
+
+                var detHtml = '<div class="mobile-details-grid">';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Джерело</span><span class="mobile-detail-value">' + escapeHtml(lead.source || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Мова</span><span class="mobile-detail-value">' + escapeHtml(lead.language || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Бюджет</span><span class="mobile-detail-value">' + escapeHtml(lead.budget || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Район</span><span class="mobile-detail-value">' + escapeHtml(lead.district || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Мета/Тип</span><span class="mobile-detail-value">' + escapeHtml(lead.metaType || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Площа</span><span class="mobile-detail-value">' + escapeHtml(lead.area || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Кімнати</span><span class="mobile-detail-value">' + escapeHtml(lead.rooms || '—') + '</span></div>';
+                detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Наступна дія</span><span class="mobile-detail-value">' + escapeHtml(lead.nextAction || '—') + '</span></div>';
+
+                if (isRent) {
+                    detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Заїзд</span><span class="mobile-detail-value">' + escapeHtml(lead.checkIn || '—') + '</span></div>';
+                    detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Виїзд</span><span class="mobile-detail-value">' + escapeHtml(lead.checkOut || '—') + '</span></div>';
+                    detHtml += '<div class="mobile-detail-item"><span class="mobile-detail-label">Гостей</span><span class="mobile-detail-value">' + escapeHtml(lead.guests || '—') + '</span></div>';
+                }
+
+                detHtml += '<div class="mobile-detail-item mobile-detail-comment"><span class="mobile-detail-label">Коментар</span><span class="mobile-detail-value">' + escapeHtml(lead.comment || '—') + '</span></div>';
+                detHtml += '</div>';
+
+                // Кнопки дій
+                detHtml += '<div class="mobile-card-actions">';
+                detHtml += '<button class="mobile-card-actions-btn mobile-card-edit-btn" data-lead-index="' + leadIndex + '" data-is-rent="' + (isRent ? '1' : '0') + '">✏️ Редагувати</button>';
+                detHtml += '</div>';
+
+                detailsDiv.innerHTML = detHtml;
+                detailsDiv.style.display = 'block';
+                card.classList.add('card-expanded');
+
+                // Кнопка редагування в деталях
+                var editBtn = detailsDiv.querySelector('.mobile-card-edit-btn');
+                if (editBtn) {
+                    editBtn.addEventListener('click', function(ev) {
+                        ev.stopPropagation();
+                        var idx = parseInt(this.getAttribute('data-lead-index'));
+                        var rent = this.getAttribute('data-is-rent') === '1';
+                        if (typeof leadsCache !== 'undefined' && leadsCache[idx]) {
+                            try {
+                                if (rent && typeof openEditSidebarRent === 'function') {
+                                    openEditSidebarRent(leadsCache[idx]);
+                                } else if (typeof openEditSidebarDirect === 'function') {
+                                    openEditSidebarDirect(leadsCache[idx]);
+                                }
+                            } catch (err) {
+                                console.error('Edit btn error:', err);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    // ============ 3. MUTATION OBSERVER: стежимо за таблицею ============
+    if (tbody) {
+        var debounceTimer;
+        var observer = new MutationObserver(function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(buildCards, 100);
+        });
+        observer.observe(tbody, { childList: true, subtree: true });
+    }
+
+    // Перебудовуємо при зміні розміру (десктоп ↔ мобілка)
+    var resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (isMobile()) {
+                buildCards();
+            }
+        }, 200);
+    });
+
+    // Перша побудова
+    if (isMobile()) {
+        setTimeout(buildCards, 500);
+    }
+})();
+</script>
 
 </body>
 </html>
