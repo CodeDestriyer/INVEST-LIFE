@@ -432,11 +432,7 @@
           document.getElementById('userRole').textContent = result.role;
         }
 
-        // Ховаємо секцію Менеджери для не-Admin
-        const managersSection = document.getElementById('managersSection');
-        if (managersSection) {
-          managersSection.style.display = result.role === 'Admin' ? 'block' : 'none';
-        }
+        // (Секція Менеджери видалена)
 
         showLoginAlert('✅ Успішно! Завантажаю...', 'success');
 
@@ -502,20 +498,11 @@
         document.getElementById('leadsTitle').textContent = '📋 Всі ліди';
       }
       
-      // Якщо менеджер - скрити поле вибору менеджера + секцію Менеджери
+      // Якщо менеджер - скрити поле вибору менеджера
       if (role === 'Manager') {
         const managerGroup = document.getElementById('managerGroup');
         if (managerGroup) {
           managerGroup.style.display = 'none';
-        }
-        const managersSection = document.getElementById('managersSection');
-        if (managersSection) {
-          managersSection.style.display = 'none';
-        }
-      } else {
-        const managersSection = document.getElementById('managersSection');
-        if (managersSection) {
-          managersSection.style.display = 'block';
         }
       }
 
@@ -564,11 +551,7 @@
           dashboardContent.classList.add('collapsed');
           toggleBtn.textContent = '+';
           document.body.classList.add('dashboard-collapsed');
-          // Менеджери теж згорнуті
-          const mgContent = document.getElementById('managersContent');
-          const mgBtn = document.getElementById('toggleManagers');
-          if (mgContent) mgContent.style.display = 'none';
-          if (mgBtn) mgBtn.textContent = '+';
+          // (Секція Менеджери видалена)
         } else if (dashboardCollapsed) {
           if (!document.body.classList.contains('dashboard-collapsed')) {
             toggleDashboard();
@@ -688,7 +671,7 @@
       method: 'POST',
       body: JSON.stringify({
         action: 'getStats',
-        payload: { 
+        payload: {
           userRole: userRole,
           userName: userName,
           type: currentDashboardType

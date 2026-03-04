@@ -292,6 +292,32 @@
     <!-- ===== РОЗДІЛЬНИК ===== -->
     <hr style="border: none; border-top: 3px solid var(--primary); margin: 1.2rem 0; opacity: 0.25;">
 
+    <!-- ===== КНОПКИ ТИПУ ОРЕНДИ (показуються тільки коли обрано Оренда) ===== -->
+    <div id="rentTypeButtons" style="display: none;">
+        <div class="rent-type-grid">
+            <button class="rent-type-btn active" onclick="selectRentSubtype('Всі')" id="rentBtn-Всі">
+                <span class="rent-type-icon">📋</span>
+                <span class="rent-type-label">Всі</span>
+            </button>
+            <button class="rent-type-btn" onclick="selectRentSubtype('Подобова')" id="rentBtn-Подобова">
+                <span class="rent-type-icon">🌙</span>
+                <span class="rent-type-label">Подобова</span>
+            </button>
+            <button class="rent-type-btn" onclick="selectRentSubtype('Сезонна')" id="rentBtn-Сезонна">
+                <span class="rent-type-icon">☀️</span>
+                <span class="rent-type-label">Сезонна</span>
+            </button>
+            <button class="rent-type-btn" onclick="selectRentSubtype('Довгострокова')" id="rentBtn-Довгострокова">
+                <span class="rent-type-icon">📅</span>
+                <span class="rent-type-label">Довгострокова</span>
+            </button>
+            <button class="rent-type-btn" onclick="selectRentSubtype('Управління')" id="rentBtn-Управління">
+                <span class="rent-type-icon">🔑</span>
+                <span class="rent-type-label">Управління</span>
+            </button>
+        </div>
+    </div>
+
     <!-- ===== АДМІН ПАНЕЛЬ ===== -->
 
     <!-- ===== ТАБЛИЦЯ ЛІДІВ ===== -->
