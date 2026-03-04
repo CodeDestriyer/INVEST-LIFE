@@ -214,11 +214,12 @@
         <!-- ГОЛОВНІ (виділені) -->
         <button class="type-pill type-pill-primary active" onclick="selectDashboardType('Купівля')" id="pill-Купівля">🏡 Купівля</button>
         <button class="type-pill type-pill-primary" onclick="selectDashboardType('Продаж')" id="pill-Продаж">🏠 Продаж</button>
+        <button class="type-pill type-pill-primary" onclick="selectDashboardType('Оренда')" id="pill-Оренда">🏨 Оренда</button>
 
         <span class="pill-divider"></span>
 
         <!-- ДРУГОРЯДНІ -->
-        <button class="type-pill" onclick="selectDashboardType('Оренда')" id="pill-Оренда">🏨 Оренда</button>
+        <button class="type-pill" onclick="selectDashboardType('Консультація')" id="pill-Консультація">💬 Консультація</button>
         <button class="type-pill" onclick="selectDashboardType('Іпотека')" id="pill-Іпотека">🏦 Іпотека</button>
     </div>
 
@@ -262,35 +263,6 @@
         </div>
 
     </section>
-
-    <!-- ===== КНОПКИ ТИПУ ОРЕНДИ (показуються тільки коли обрано Оренда) ===== -->
-    <div id="rentTypeButtons" style="display: none;">
-        <div class="rent-type-grid">
-            <button class="rent-type-btn active" onclick="selectRentSubtype('Всі')" id="rentBtn-Всі">
-                <span class="rent-type-icon">📋</span>
-                <span class="rent-type-label">Всі</span>
-            </button>
-            <button class="rent-type-btn" onclick="selectRentSubtype('Подобова')" id="rentBtn-Подобова">
-                <span class="rent-type-icon">🌙</span>
-                <span class="rent-type-label">Подобова</span>
-            </button>
-            <button class="rent-type-btn" onclick="selectRentSubtype('Сезонна')" id="rentBtn-Сезонна">
-                <span class="rent-type-icon">☀️</span>
-                <span class="rent-type-label">Сезонна</span>
-            </button>
-            <button class="rent-type-btn" onclick="selectRentSubtype('Довгострокова')" id="rentBtn-Довгострокова">
-                <span class="rent-type-icon">📅</span>
-                <span class="rent-type-label">Довгострокова</span>
-            </button>
-            <button class="rent-type-btn" onclick="selectRentSubtype('Управління')" id="rentBtn-Управління">
-                <span class="rent-type-icon">🔑</span>
-                <span class="rent-type-label">Управління</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- ===== РОЗДІЛЬНИК ===== -->
-    <hr style="border: none; border-top: 3px solid var(--primary); margin: 1.2rem 0; opacity: 0.25;">
 
     <!-- ===== КНОПКИ ТИПУ ОРЕНДИ (показуються тільки коли обрано Оренда) ===== -->
     <div id="rentTypeButtons" style="display: none;">

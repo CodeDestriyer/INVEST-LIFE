@@ -2204,56 +2204,6 @@
             white-space: nowrap;
         }
 
-        /* ===== ВЕЛИКІ КНОПКИ ТИПУ ОРЕНДИ ===== */
-        .rent-type-grid {
-            display: flex;
-            gap: 0.6rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 0.5rem 0;
-        }
-
-        .rent-type-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.3rem;
-            padding: 0.7rem 1.2rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            min-width: 100px;
-            flex: 1;
-            max-width: 180px;
-        }
-
-        .rent-type-btn:hover {
-            border-color: #4472C4;
-            background: #f0f5ff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(68, 114, 196, 0.15);
-        }
-
-        .rent-type-btn.active {
-            border-color: #4472C4;
-            background: linear-gradient(135deg, #4472C4, #2B5797);
-            color: white;
-            box-shadow: 0 4px 14px rgba(68, 114, 196, 0.3);
-        }
-
-        .rent-type-icon {
-            font-size: 1.4rem;
-        }
-
-        .rent-type-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
         /* Таблиця при згорнутому дашборді */
         body.dashboard-collapsed .table-wrapper {
             max-height: calc(100vh - 250px);

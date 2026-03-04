@@ -108,7 +108,7 @@
     const userRole = localStorage.getItem('user_role');
     if (!userName) return;
 
-    const allTypes = ['Купівля', 'Продаж', 'Іпотека', 'Подобова', 'Сезонна', 'Довгострокова', 'Управління'];
+    const allTypes = ['Купівля', 'Продаж', 'Консультація', 'Іпотека', 'Подобова', 'Сезонна', 'Довгострокова', 'Управління'];
 
     allTypes.forEach(type => {
       const isRent = RENT_TYPES.includes(type);
@@ -1987,11 +1987,10 @@
   function renderRentLeads(leads) {
     const tbody = document.getElementById('leadsTable');
     const thead = document.getElementById('leadsTableHead');
-    
-    // ⭐ Завантажую налаштування видимості
+
+    // ⭐ Використовую ті ж колонки що і для Нерухомості
     const vc = visibleRentColumns;
-    
-    // ⭐ ОНОВЛЮЮ ЗАГОЛОВКИ ДЛЯ ОРЕНДИ (з урахуванням видимості)
+
     thead.innerHTML = `
       <tr>
         ${vc.id !== false ? '<th style="width:8%">ID</th>' : ''}
@@ -2006,13 +2005,12 @@
         <th style="width:auto">Дії</th>
       </tr>
     `;
-    
-    // Оновлюю чекбокси в модалці
+
     Object.keys(vc).forEach(key => {
       const checkbox = document.getElementById('rent-col-' + key);
       if (checkbox) checkbox.checked = vc[key] !== false;
     });
-    
+
     const stageNames = {
       'Етап_1_Контакт': '1️⃣ Контакт',
       'Етап_2_Кваліфікація': '2️⃣ Кваліфікація',
@@ -2023,10 +2021,8 @@
       'Етап_7_Заселення': '7️⃣ Заселення',
       'Етап_8_Виселення': '8️⃣ Виселення'
     };
-    
-    function formatDate(dateStr) {
-      return formatDateSafe(dateStr);
-    }
+
+    function fmtDate(d) { return formatDateSafe(d); }
 
     if (!leads || leads.length === 0) {
       const colCount = Object.values(vc).filter(v => v !== false).length + 2;
@@ -2035,8 +2031,7 @@
     }
 
     leadsCache = leads;
-    
-    // ⭐ СОРТУВАННЯ: Нові ліди зверху, всередині — новіші першими (по rowIndex desc)
+
     leads.sort((a, b) => {
       const aNew = isLeadNew(a) ? 1 : 0;
       const bNew = isLeadNew(b) ? 1 : 0;
@@ -2045,125 +2040,94 @@
     });
 
     let newLeadsCount = 0;
-    
+
     tbody.innerHTML = leads.map((lead, index) => {
       const stageName = stageNames[lead.stage] || (lead.stage || 'Контакт');
-      
+
       let rowClasses = [];
       const unassigned = isLeadUnassigned(lead);
       if (unassigned) rowClasses.push('lead-unassigned');
-      
+
       const isNew = isLeadNew(lead);
-      if (isNew) {
-        rowClasses.push('lead-new');
-        newLeadsCount++;
-      }
-      
+      if (isNew) { rowClasses.push('lead-new'); newLeadsCount++; }
+
       const newIndicator = isNew ? '<span class="new-lead-indicator">🔔 НОВИЙ</span>' : '';
-      
-      const managerDisplay = unassigned 
-        ? '<span style="color: #FF0000; font-weight: bold;">❌ Не назначено</span>' 
+      const managerDisplay = unassigned
+        ? '<span style="color: #FF0000; font-weight: bold;">❌ Не назначено</span>'
         : `👤 ${lead.manager}`;
-      
-      // ⭐ Рахую кількість видимих колонок для colspan
+
       const visibleCount = Object.values(vc).filter(v => v !== false).length + 1;
-      
-      // ⭐ ОСНОВНИЙ РЯДОК (з урахуванням видимості)
+
+      // ⭐ Такий самий рядок як в Нерухомості (realty-lead-row)
       const mainRow = `
-        <tr class="${rowClasses.join(' ')} rent-lead-row" data-lead-id="${lead.id}" data-lead-index="${index}">
+        <tr class="${rowClasses.join(' ')} realty-lead-row" data-lead-id="${lead.id}" data-lead-index="${index}">
           ${vc.id !== false ? `<td><strong>${lead.id || '—'}</strong>${newIndicator}</td>` : ''}
           ${vc.fullName !== false ? `<td>${lead.fullName || '—'}</td>` : ''}
           ${vc.phone !== false ? `<td>${lead.phone || '—'}</td>` : ''}
           ${vc.type !== false ? `<td>${lead.type || '—'}</td>` : ''}
           ${vc.manager !== false ? `<td>${managerDisplay}</td>` : ''}
           ${vc.stage !== false ? `<td>${stageName}</td>` : ''}
-          ${vc.nextContact !== false ? `<td>${formatDate(lead.nextContact)}</td>` : ''}
+          ${vc.nextContact !== false ? `<td>${fmtDate(lead.nextContact)}</td>` : ''}
           ${vc.daysLeft !== false ? `<td>${lead.daysLeft || '—'}</td>` : ''}
           ${vc.status !== false ? `<td>${lead.status || '—'}</td>` : ''}
           <td style="min-width:200px">
             <div class="lead-actions">
-              <button class="btn-details" data-index="${index}">▼ Деталі</button>
-              <button class="btn-edit-lead edit-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}">✏️</button>
-              <button class="btn-delete-lead delete-lead-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}">🗑️</button>
+              <button class="btn-details-realty" data-index="${index}">▼ Деталі</button>
+              <button class="btn-edit-lead rent-edit-btn" data-lead-index="${index}" data-lead-id="${lead.id}">✏️</button>
+              <button class="btn-delete-lead rent-delete-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}">🗑️</button>
             </div>
           </td>
         </tr>
       `;
-      
-      // ⭐ РЯДОК ДЕТАЛЕЙ (прихований за замовчуванням)
+
+      // ⭐ Деталі — такий самий стиль як в Нерухомості
       const detailsRow = `
-        <tr class="rent-details-row" data-details-for="${index}" style="display: none; background: #f8f9fa;">
+        <tr class="realty-details-row" data-details-for="${index}" style="display: none; background: #f8f9fa;">
           <td colspan="${visibleCount}" style="padding: 15px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 0.85rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 0.85rem;">
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">🔗 Джерело:</strong><br>
-                <span>${lead.source || '—'}</span>
+                <strong style="color: #4472C4;">🔗 Джерело:</strong><br><span>${lead.source || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">🌐 Мова:</strong><br>
-                <span>${lead.language || '—'}</span>
+                <strong style="color: #4472C4;">🌐 Мова:</strong><br><span>${lead.language || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">💰 Бюджет:</strong><br>
-                <span>${lead.budget || '—'}</span>
+                <strong style="color: #4472C4;">💰 Бюджет:</strong><br><span>${lead.budget || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">🛏️ Кімнати/Стан:</strong><br>
-                <span>${lead.roomsCondition || '—'}</span>
+                <strong style="color: #4472C4;">📍 Район:</strong><br><span>${lead.district || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">🐾 Тварини/Формат:</strong><br>
-                <span>${lead.petsFormat || '—'}</span>
+                <strong style="color: #4472C4;">🛏️ Кімнати/Стан:</strong><br><span>${lead.roomsCondition || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">👥 Люди:</strong><br>
-                <span>${lead.people || '—'}</span>
+                <strong style="color: #4472C4;">🐾 Тварини/Формат:</strong><br><span>${lead.petsFormat || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">📋 Термін/Тип:</strong><br>
-                <span>${lead.termType || '—'}</span>
-              </div>
-              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">📅 Дата/Сезон:</strong><br>
-                <span>${lead.dateSeason || '—'}</span>
-              </div>
-              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">📍 Район:</strong><br>
-                <span>${lead.district || '—'}</span>
-              </div>
-              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">🎯 Наступна дія:</strong><br>
-                <span>${lead.nextAction || '—'}</span>
+                <strong style="color: #4472C4;">🎯 Наступна дія:</strong><br><span>${lead.nextAction || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); grid-column: span 2;">
-                <strong style="color: #4472C4;">💬 Коментар:</strong><br>
-                <span>${lead.comment || '—'}</span>
+                <strong style="color: #4472C4;">💬 Коментар:</strong><br><span>${lead.comment || '—'}</span>
               </div>
               <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">📆 Дата додавання:</strong><br>
-                <span>${formatDate(lead.dateAdded)}</span>
-              </div>
-              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <strong style="color: #4472C4;">🕐 Час контакту:</strong><br>
-                <span>${lead.contactTime || '—'}</span>
+                <strong style="color: #4472C4;">📆 Дата додавання:</strong><br><span>${fmtDate(lead.dateAdded)}</span>
               </div>
             </div>
           </td>
         </tr>
       `;
-      
+
       return mainRow + detailsRow;
     }).join('');
-    
+
     updateNewLeadsSignal(newLeadsCount);
-    
-    // ⭐ ОБРОБНИК КНОПКИ "ДЕТАЛІ"
-    document.querySelectorAll('.btn-details').forEach(btn => {
+
+    // ⭐ Деталі — ті ж обробники що й у Нерухомості
+    document.querySelectorAll('.btn-details-realty').forEach(btn => {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
         const index = this.dataset.index;
-        const detailsRow = document.querySelector(`tr[data-details-for="${index}"]`);
-        
+        const detailsRow = document.querySelector(`tr.realty-details-row[data-details-for="${index}"]`);
         if (detailsRow.style.display === 'none') {
           detailsRow.style.display = 'table-row';
           this.textContent = '▲ Сховати';
@@ -2175,22 +2139,16 @@
         }
       });
     });
-    
-    // ⭐ ОБРОБНИК РЕДАГУВАННЯ
-    document.querySelectorAll('.edit-lead-btn').forEach(btn => {
+
+    // ⭐ Редагування
+    document.querySelectorAll('.rent-edit-btn').forEach(btn => {
       btn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         try {
-          const leadIndex = parseInt(this.dataset.leadIndex);
-          const leadId = this.dataset.leadId;
-          const lead = leadsCache[leadIndex];
-          
-          if (!lead) {
-            throw new Error('Ліда не знайдено');
-          }
-          
-          removeNewLeadSignal(leadId);
+          const lead = leadsCache[parseInt(this.dataset.leadIndex)];
+          if (!lead) throw new Error('Ліда не знайдено');
+          removeNewLeadSignal(this.dataset.leadId);
           openEditSidebarRent(lead);
         } catch (err) {
           console.error('❌ Помилка:', err);
@@ -2198,28 +2156,23 @@
         }
       });
     });
-    
-    // ⭐ ОБРОБНИК ВИДАЛЕННЯ ЛІДА ОРЕНДИ
-    document.querySelectorAll('.rent-lead-row .delete-lead-btn').forEach(btn => {
+
+    // ⭐ Видалення
+    document.querySelectorAll('.rent-delete-btn').forEach(btn => {
       btn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
-        const leadId = this.dataset.leadId;
-        const rowIndex = this.dataset.rowIndex;
-        const confirmed = await confirmDeleteLead(leadId);
-        if (confirmed) {
-          handleSoftDelete(leadId, rowIndex);
-        }
+        const confirmed = await confirmDeleteLead(this.dataset.leadId);
+        if (confirmed) handleSoftDelete(this.dataset.leadId, this.dataset.rowIndex);
       });
     });
-    
-    // ⭐ ОБРОБНИК НОВИХ ЛІДІВ
+
+    // ⭐ Нові ліди
     document.querySelectorAll('tr.lead-new').forEach(row => {
       row.style.cursor = 'pointer';
       row.addEventListener('click', function(e) {
-        if (!e.target.closest('.edit-lead-btn') && !e.target.closest('.delete-lead-btn') && !e.target.closest('.btn-details')) {
-          const leadId = this.dataset.leadId;
-          removeNewLeadSignal(leadId);
+        if (!e.target.closest('.rent-edit-btn') && !e.target.closest('.rent-delete-btn') && !e.target.closest('.btn-details-realty')) {
+          removeNewLeadSignal(this.dataset.leadId);
         }
       });
     });
