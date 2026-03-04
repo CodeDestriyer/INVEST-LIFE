@@ -545,18 +545,11 @@
       const dashboardContent = document.getElementById('dashboardContent');
       const toggleBtn = document.getElementById('toggleDashboard');
 
+      // ⭐ Завжди згортаємо дашборд при завантаженні
       if (dashboardContent && toggleBtn) {
-        if (window.innerWidth <= 768) {
-          // На мобілці — гарантуємо згорнутий стан (не toggle, а прямо)
-          dashboardContent.classList.add('collapsed');
-          toggleBtn.textContent = '+';
-          document.body.classList.add('dashboard-collapsed');
-          // (Секція Менеджери видалена)
-        } else if (dashboardCollapsed) {
-          if (!document.body.classList.contains('dashboard-collapsed')) {
-            toggleDashboard();
-          }
-        }
+        dashboardContent.classList.add('collapsed');
+        toggleBtn.textContent = '+';
+        document.body.classList.add('dashboard-collapsed');
       }
     }, 800);
   }
@@ -2340,133 +2333,195 @@
     const thead = document.getElementById('leadsTableHead');
     const vc = visibleMortgageColumns;
 
-    // Заголовки
-    let headerHtml = '<tr>';
-    if (vc.id) headerHtml += '<th>ID</th>';
-    if (vc.fullName) headerHtml += '<th>ПІБ</th>';
-    if (vc.phone) headerHtml += '<th>Телефон</th>';
-    if (vc.manager) headerHtml += '<th>Менеджер</th>';
-    if (vc.stage) headerHtml += '<th>Етап</th>';
-    if (vc.nextContact) headerHtml += '<th>Контакт</th>';
-    if (vc.daysLeft) headerHtml += '<th>Днів</th>';
-    if (vc.status) headerHtml += '<th>Статус</th>';
-    headerHtml += '<th>Дії</th></tr>';
-    thead.innerHTML = headerHtml;
+    // ⭐ Заголовки — такий самий стиль як в Нерухомості
+    thead.innerHTML = `
+      <tr>
+        ${vc.id !== false ? '<th style="width:8%">ID</th>' : ''}
+        ${vc.fullName !== false ? '<th style="width:10%">ПІБ</th>' : ''}
+        ${vc.phone !== false ? '<th style="width:11%">Телефон</th>' : ''}
+        ${vc.manager !== false ? '<th style="width:9%">Менеджер</th>' : ''}
+        ${vc.stage !== false ? '<th style="width:11%">Поточний Етап</th>' : ''}
+        ${vc.nextContact !== false ? '<th style="width:10%">Наступний контакт</th>' : ''}
+        ${vc.daysLeft !== false ? '<th style="width:6%">Днів залиш.</th>' : ''}
+        ${vc.status !== false ? '<th style="width:10%">Статус</th>' : ''}
+        <th style="width:auto">Дії</th>
+      </tr>
+    `;
 
-    // Оновлюю чекбокси в модалці
     Object.keys(vc).forEach(col => {
       const cb = document.getElementById('mort-col-' + col);
-      if (cb) cb.checked = vc[col];
+      if (cb) cb.checked = vc[col] !== false;
     });
 
-    const stageEmoji = {
-      'Етап_1_Контакт': '1️⃣', 'Етап_2_Кваліфікація': '2️⃣', 'Етап_3_Подача_в_банк': '3️⃣',
-      'Етап_4_Схвалення_ліміту': '4️⃣', 'Етап_5_Підбір': '5️⃣', "Етап_6_Оцінка_об'єкта": '6️⃣',
-      'Етап_7_FIPER': '7️⃣', 'Етап_8_Нотаріус': '8️⃣', 'Етап_9_Після': '9️⃣'
+    const stageNames = {
+      'Етап_1_Контакт': '1️⃣ Контакт',
+      'Етап_2_Кваліфікація': '2️⃣ Кваліфікація',
+      'Етап_3_Подача_в_банк': '3️⃣ Подача в банк',
+      'Етап_4_Схвалення_ліміту': '4️⃣ Схвалення ліміту',
+      'Етап_5_Підбір': '5️⃣ Підбір',
+      "Етап_6_Оцінка_об'єкта": '6️⃣ Оцінка об\'єкта',
+      'Етап_7_FIPER': '7️⃣ FIPER',
+      'Етап_8_Нотаріус': '8️⃣ Нотаріус',
+      'Етап_9_Після': '9️⃣ Після'
     };
 
     function fmtDate(d) { return formatDateSafe(d); }
 
     if (!leads || leads.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Немає лідів</td></tr>';
+      const colCount = Object.values(vc).filter(v => v !== false).length + 2;
+      tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center;">📭 Немає лідів</td></tr>`;
       return;
     }
 
     leadsCache = leads;
 
-    // Сортування (нові зверху)
-    const sorted = [...leads].sort((a, b) => {
-      const aNew = isLeadNew(a) ? 0 : 1;
-      const bNew = isLeadNew(b) ? 0 : 1;
-      return aNew - bNew;
+    leads.sort((a, b) => {
+      const aNew = isLeadNew(a) ? 1 : 0;
+      const bNew = isLeadNew(b) ? 1 : 0;
+      if (bNew !== aNew) return bNew - aNew;
+      return (b.rowIndex || 0) - (a.rowIndex || 0);
     });
 
-    let html = '';
-    sorted.forEach((lead, i) => {
-      const stage = lead.stage || '';
-      const emoji = stageEmoji[stage] || '🔹';
-      const stageName = stage.replace(/Етап_\d+_/g, '').replace(/_/g, ' ');
+    let newLeadsCount = 0;
+
+    tbody.innerHTML = leads.map((lead, index) => {
+      const stageName = stageNames[lead.stage] || (lead.stage || 'Контакт');
+
+      let rowClasses = [];
+      const unassigned = isLeadUnassigned(lead);
+      if (unassigned) rowClasses.push('lead-unassigned');
+
       const isNew = isLeadNew(lead);
-      const isUnassigned = !lead.manager || lead.manager === 'Не назначено';
-      let rowClass = '';
-      if (isNew) rowClass += ' lead-new';
-      if (isUnassigned) rowClass += ' lead-unassigned';
+      if (isNew) { rowClasses.push('lead-new'); newLeadsCount++; }
 
-      html += `<tr class="lead-row${rowClass}" data-lead-id="${lead.id}" data-index="${i}">`;
-      if (vc.id) html += `<td>${lead.id || ''}</td>`;
-      if (vc.fullName) html += `<td>${lead.fullName || '—'}</td>`;
-      if (vc.phone) html += `<td>${lead.phone || ''}</td>`;
-      if (vc.manager) html += `<td>${isUnassigned ? '<span style="color:red">❌ Не назначено</span>' : lead.manager}</td>`;
-      if (vc.stage) html += `<td>${emoji} ${stageName}</td>`;
-      if (vc.nextContact) html += `<td>${fmtDate(lead.nextContact)}</td>`;
-      if (vc.daysLeft) html += `<td>${lead.daysLeft || '—'}</td>`;
-      if (vc.status) {
-        const st = lead.status || '';
-        const stColor = st === 'ПРОСРОЧЕНО' ? 'red' : st === 'СКОРО' ? '#FFD700' : '#70AD47';
-        html += `<td style="color:${stColor}; font-weight:bold;">${st}</td>`;
-      }
-      html += `<td>
-        <button class="mort-details-btn" data-index="${i}" style="background:#8B5CF6;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;margin:1px;">📋</button>
-        <button class="mort-edit-btn" data-index="${i}" style="background:#4472C4;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;margin:1px;">✏️</button>
-        <button class="mort-delete-btn" data-id="${lead.id}" data-row="${lead.rowIndex}" style="background:#FF6B6B;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;margin:1px;">🗑</button>
-      </td>`;
-      html += '</tr>';
+      const newIndicator = isNew ? '<span class="new-lead-indicator">🔔 НОВИЙ</span>' : '';
+      const managerDisplay = unassigned
+        ? '<span style="color: #FF0000; font-weight: bold;">❌ Не назначено</span>'
+        : `👤 ${lead.manager}`;
 
-      // Деталі (прихований рядок)
-      const colSpan = Object.values(vc).filter(v => v).length + 1;
-      html += `<tr class="details-row" id="mort-details-${i}" style="display:none;">
-        <td colspan="${colSpan}" style="padding:1rem; background:#f9f7ff;">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.85rem;">
-            <div><b>🔗 Джерело:</b> ${lead.source || '—'}</div>
-            <div><b>🌐 Мова:</b> ${lead.language || '—'}</div>
-            <div><b>💰 Бюджет:</b> ${lead.budget || '—'}</div>
-            <div><b>🏛 Податкова резиденція:</b> ${lead.taxResidency || '—'}</div>
-            <div><b>💵 Дохід:</b> ${lead.income || '—'}</div>
-            <div><b>🌍 Країна доходу:</b> ${lead.incomeCountry || '—'}</div>
-            <div><b>📆 Коли планує:</b> ${lead.whenPlans || '—'}</div>
-            <div><b>👨‍👩‍👧 Дорослих:</b> ${lead.adults || '—'}</div>
-            <div><b>👶 Дітей:</b> ${lead.children || '—'}</div>
-            <div><b>📆 Дата додавання:</b> ${fmtDate(lead.dateAdded)}</div>
-          </div>
-          <div style="margin-top:0.5rem;"><b>💬 Коментар:</b> ${lead.comment || '—'}</div>
-        </td>
-      </tr>`;
-    });
+      const visibleCount = Object.values(vc).filter(v => v !== false).length + 1;
 
-    tbody.innerHTML = html;
+      // ⭐ Такий самий рядок як в Нерухомості (realty-lead-row)
+      const mainRow = `
+        <tr class="${rowClasses.join(' ')} realty-lead-row" data-lead-id="${lead.id}" data-lead-index="${index}">
+          ${vc.id !== false ? `<td><strong>${lead.id || '—'}</strong>${newIndicator}</td>` : ''}
+          ${vc.fullName !== false ? `<td>${lead.fullName || '—'}</td>` : ''}
+          ${vc.phone !== false ? `<td>${lead.phone || '—'}</td>` : ''}
+          ${vc.manager !== false ? `<td>${managerDisplay}</td>` : ''}
+          ${vc.stage !== false ? `<td>${stageName}</td>` : ''}
+          ${vc.nextContact !== false ? `<td>${fmtDate(lead.nextContact)}</td>` : ''}
+          ${vc.daysLeft !== false ? `<td>${lead.daysLeft || '—'}</td>` : ''}
+          ${vc.status !== false ? `<td>${lead.status || '—'}</td>` : ''}
+          <td style="min-width:200px">
+            <div class="lead-actions">
+              <button class="btn-details-realty" data-index="${index}">▼ Деталі</button>
+              <button class="btn-edit-lead mort-edit-btn" data-lead-index="${index}" data-lead-id="${lead.id}">✏️</button>
+              <button class="btn-delete-lead mort-delete-btn" data-lead-index="${index}" data-lead-id="${lead.id}" data-row-index="${lead.rowIndex}">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      `;
 
-    // Обробники кліків
-    tbody.querySelectorAll('.mort-details-btn').forEach(btn => {
+      // ⭐ Деталі — такий самий стиль як в Нерухомості
+      const detailsRow = `
+        <tr class="realty-details-row" data-details-for="${index}" style="display: none; background: #f8f9fa;">
+          <td colspan="${visibleCount}" style="padding: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 0.85rem;">
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">🔗 Джерело:</strong><br><span>${lead.source || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">🌐 Мова:</strong><br><span>${lead.language || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">💰 Бюджет:</strong><br><span>${lead.budget || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">🏛 Податкова резиденція:</strong><br><span>${lead.taxResidency || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">💵 Дохід:</strong><br><span>${lead.income || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">🌍 Країна доходу:</strong><br><span>${lead.incomeCountry || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">📆 Коли планує:</strong><br><span>${lead.whenPlans || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">👨‍👩‍👧 Дорослих:</strong><br><span>${lead.adults || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">👶 Дітей:</strong><br><span>${lead.children || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); grid-column: span 2;">
+                <strong style="color: #4472C4;">💬 Коментар:</strong><br><span>${lead.comment || '—'}</span>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <strong style="color: #4472C4;">📆 Дата додавання:</strong><br><span>${fmtDate(lead.dateAdded)}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+
+      return mainRow + detailsRow;
+    }).join('');
+
+    updateNewLeadsSignal(newLeadsCount);
+
+    // ⭐ Деталі — ті ж обробники що й у Нерухомості
+    document.querySelectorAll('.btn-details-realty').forEach(btn => {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        const idx = this.dataset.index;
-        const row = document.getElementById('mort-details-' + idx);
-        if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
-      });
-    });
-
-    tbody.querySelectorAll('.mort-edit-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const lead = leadsCache[parseInt(this.dataset.index)];
-        if (lead) openEditSidebarMortgage(lead);
-      });
-    });
-
-    tbody.querySelectorAll('.mort-delete-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (confirm('Видалити цього ліда?')) {
-          softDeleteLead(this.dataset.id, this.dataset.row);
+        const index = this.dataset.index;
+        const detailsRow = document.querySelector(`tr.realty-details-row[data-details-for="${index}"]`);
+        if (detailsRow.style.display === 'none') {
+          detailsRow.style.display = 'table-row';
+          this.textContent = '▲ Сховати';
+          this.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+        } else {
+          detailsRow.style.display = 'none';
+          this.textContent = '▼ Деталі';
+          this.style.background = 'linear-gradient(135deg, #4472C4, #2d5aa0)';
         }
       });
     });
 
-    // Клік на рядок нового ліда — знімає сигнал
-    tbody.querySelectorAll('.lead-new').forEach(row => {
-      row.addEventListener('click', function() {
-        const id = this.dataset.leadId;
-        if (id) removeNewLeadSignal(id);
+    // ⭐ Редагування
+    document.querySelectorAll('.mort-edit-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          const lead = leadsCache[parseInt(this.dataset.leadIndex)];
+          if (!lead) throw new Error('Ліда не знайдено');
+          removeNewLeadSignal(this.dataset.leadId);
+          openEditSidebarMortgage(lead);
+        } catch (err) {
+          console.error('❌ Помилка:', err);
+          alert('❌ Помилка: ' + err.message);
+        }
+      });
+    });
+
+    // ⭐ Видалення
+    document.querySelectorAll('.mort-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const confirmed = await confirmDeleteLead(this.dataset.leadId);
+        if (confirmed) handleSoftDelete(this.dataset.leadId, this.dataset.rowIndex);
+      });
+    });
+
+    // ⭐ Нові ліди
+    document.querySelectorAll('tr.lead-new').forEach(row => {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function(e) {
+        if (!e.target.closest('.mort-edit-btn') && !e.target.closest('.mort-delete-btn') && !e.target.closest('.btn-details-realty')) {
+          removeNewLeadSignal(this.dataset.leadId);
+        }
       });
     });
   }
@@ -3050,19 +3105,13 @@
     const menu = document.getElementById('dashboardTypeMenu');
     if (menu) menu.style.display = 'none';
 
-    // На мобілці — згортаємо дашборд при зміні типу
-    if (window.innerWidth <= 768) {
-      const content = document.getElementById('dashboardContent');
-      if (content && !content.classList.contains('collapsed')) {
-        content.classList.add('collapsed');
-        document.getElementById('toggleDashboard').textContent = '+';
-      }
-    } else {
-      const content = document.getElementById('dashboardContent');
-      if (content && content.classList.contains('collapsed')) {
-        content.classList.remove('collapsed');
-        document.getElementById('toggleDashboard').textContent = '−';
-      }
+    // ⭐ Завжди згортаємо дашборд при зміні типу
+    const content = document.getElementById('dashboardContent');
+    const toggleBtn = document.getElementById('toggleDashboard');
+    if (content && toggleBtn && !content.classList.contains('collapsed')) {
+      content.classList.add('collapsed');
+      toggleBtn.textContent = '+';
+      document.body.classList.add('dashboard-collapsed');
     }
 
     loadStats();
@@ -3405,15 +3454,11 @@
     setTimeout(() => {
       const dashboardContent = document.getElementById('dashboardContent');
       const toggleBtn = document.getElementById('toggleDashboard');
+      // ⭐ Завжди згортаємо дашборд
       if (dashboardContent && toggleBtn) {
-        if (window.innerWidth <= 768) {
-          // На мобілці — прямо встановлюємо collapsed (без toggle)
-          dashboardContent.classList.add('collapsed');
-          toggleBtn.textContent = '+';
-          document.body.classList.add('dashboard-collapsed');
-        } else if (!dashboardContent.classList.contains('collapsed')) {
-          toggleDashboard();
-        }
+        dashboardContent.classList.add('collapsed');
+        toggleBtn.textContent = '+';
+        document.body.classList.add('dashboard-collapsed');
       }
     }, 500);
 
