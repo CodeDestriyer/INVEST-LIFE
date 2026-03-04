@@ -10,13 +10,16 @@
   
   // ⭐ Типи оренди
   const RENT_TYPES = ['Подобова', 'Сезонна', 'Довгострокова', 'Управління'];
-  
+  // ⭐ Поточний підтип оренди
+  let currentRentSubtype = 'Всі';
+
   // ⭐ Функція для отримання правильного API URL в залежності від типу
   function getScriptUrl() {
-    if (RENT_TYPES.includes(currentDashboardType)) {
+    if (RENT_TYPES.includes(currentDashboardType) || currentDashboardType === 'Оренда') {
       console.log('🏨 Використовую API Оренда');
       return SCRIPT_URL_RENT;
     } else {
+      // Нерухомість та Іпотека — один скрипт
       console.log('🏠 Використовую API Нерухомість');
       return SCRIPT_URL_REALTY;
     }
@@ -89,8 +92,9 @@
   let managers = [];
   
   // ⭐ КЕШ: Всі ліди одного скрипта завантажуються одним запитом
-  let cachedRentLeads = null;    // Всі ліди Оренди (всі типи)
-  let cachedRealtyLeads = null;  // Всі ліди Нерухомості (всі типи)
+  let cachedRentLeads = null;      // Всі ліди Оренди (всі типи)
+  let cachedRealtyLeads = null;    // Всі ліди Нерухомості (всі типи)
+  let cachedMortgageLeads = null;  // Всі ліди Іпотеки
   let selectedStage = null; // ⭐ Для отслеживання обраного етапу
   let dashboardCollapsed = true; // ⭐ За замовчуванням дашборд згорнутий
   let selectedManagers = []; // ⭐ НОВОЕ: Вибрані менеджери для дашборда (спочатку пусто, заповнюється при завантаженні)
@@ -104,8 +108,8 @@
     const userRole = localStorage.getItem('user_role');
     if (!userName) return;
 
-    const allTypes = ['Купівля', 'Продаж', 'Консультація', 'Подобова', 'Сезонна', 'Довгострокова', 'Управління'];
-    
+    const allTypes = ['Купівля', 'Продаж', 'Іпотека', 'Подобова', 'Сезонна', 'Довгострокова', 'Управління'];
+
     allTypes.forEach(type => {
       const isRent = RENT_TYPES.includes(type);
       const url = isRent ? SCRIPT_URL_RENT : SCRIPT_URL_REALTY;
@@ -133,8 +137,8 @@
   function updateTabBadge(type, count) {
     // Для типів Оренди — оновлюю як сам підтип, так і загальний бейджик на кнопці "Оренда"
     if (RENT_TYPES.includes(type)) {
-      // Бейджик на rent-option підтипі
-      const rentOption = document.querySelector(`.rent-option[onclick*="${type}"]`);
+      // Бейджик на rent-type-btn підтипі
+      const rentOption = document.getElementById('rentBtn-' + type);
       if (rentOption) {
         let badge = rentOption.querySelector('.pill-badge');
         if (count > 0) {
@@ -158,13 +162,7 @@
           if (!badge) {
             badge = document.createElement('span');
             badge.className = 'pill-badge';
-            // Вставляю перед dropdown-arrow
-            const arrow = rentPill.querySelector('.dropdown-arrow');
-            if (arrow) {
-              rentPill.insertBefore(badge, arrow);
-            } else {
-              rentPill.appendChild(badge);
-            }
+            rentPill.appendChild(badge);
           }
           badge.textContent = totalRent;
         } else if (badge) {
@@ -580,25 +578,37 @@
     }, 800);
   }
 
+  // ⭐ Допоміжна функція — чи в режимі оренди
+  function isRentMode() {
+    return RENT_TYPES.includes(currentDashboardType) || currentDashboardType === 'Оренда';
+  }
+
   function loadLeads() {
     const manager = localStorage.getItem('user_name');
     const role = localStorage.getItem('user_role');
-    
+
     console.log('Завантажаю ліди для:', manager, 'Роль:', role, 'Тип:', currentDashboardType);
-    
-    const isRent = RENT_TYPES.includes(currentDashboardType);
-    const cache = isRent ? cachedRentLeads : cachedRealtyLeads;
-    
+
+    const isRent = isRentMode();
+    const isMortgage = currentDashboardType === 'Іпотека';
+    const cache = isMortgage ? cachedMortgageLeads : (isRent ? cachedRentLeads : cachedRealtyLeads);
+
     // ⭐ Якщо є кеш — фільтруємо локально (миттєво)
     if (cache) {
       console.log('⚡ Використовую кеш! Всього в кеші:', cache.length);
-      allLeads = cache.filter(lead => lead.type === currentDashboardType && lead.deletedStatus !== 'ВИДАЛЕНО');
+      if (currentDashboardType === 'Оренда') {
+        allLeads = cache.filter(lead => lead.deletedStatus !== 'ВИДАЛЕНО');
+      } else if (isMortgage) {
+        allLeads = cache.filter(lead => lead.deletedStatus !== 'ВИДАЛЕНО');
+      } else {
+        allLeads = cache.filter(lead => lead.type === currentDashboardType && lead.deletedStatus !== 'ВИДАЛЕНО');
+      }
       console.log('Після фільтрації:', allLeads.length, 'типу:', currentDashboardType);
       renderLeads(allLeads);
       populateFilters();
       return;
     }
-    
+
     // ⭐ Очищаю таблицю і показую спінер поки дані завантажуються
     const tbody = document.getElementById('leadsTable');
     const thead = document.getElementById('leadsTableHead');
@@ -611,13 +621,16 @@
         </td>
       </tr>
     `;
-    
+
     // ⭐ Один запит — всі ліди скрипта без фільтра по типу
+    const payload = { manager: manager, userRole: role };
+    if (isMortgage) payload.sheetType = 'Іпотека';
+
     fetch(getScriptUrl(), {
       method: 'POST',
       body: JSON.stringify({
         action: 'getAllLeadsNoFilter',
-        payload: { manager: manager, userRole: role }
+        payload: payload
       })
     })
     .then(r => r.json())
@@ -626,16 +639,22 @@
       if (result.success) {
         const allFetched = result.leads || [];
         console.log('Завантажено всього:', allFetched.length, '(всі типи)');
-        
+
         // ⭐ Зберігаю в кеш
-        if (isRent) {
+        if (isMortgage) {
+          cachedMortgageLeads = allFetched;
+        } else if (isRent) {
           cachedRentLeads = allFetched;
         } else {
           cachedRealtyLeads = allFetched;
         }
-        
+
         // Фільтрую по поточному типу
-        allLeads = allFetched.filter(lead => lead.type === currentDashboardType && lead.deletedStatus !== 'ВИДАЛЕНО');
+        if (currentDashboardType === 'Оренда' || isMortgage) {
+          allLeads = allFetched.filter(lead => lead.deletedStatus !== 'ВИДАЛЕНО');
+        } else {
+          allLeads = allFetched.filter(lead => lead.type === currentDashboardType && lead.deletedStatus !== 'ВИДАЛЕНО');
+        }
         console.log('Після фільтрації:', allLeads.length, 'типу:', currentDashboardType);
         renderLeads(allLeads);
         populateFilters();
@@ -653,9 +672,18 @@
   function loadStats() {
     const userName = localStorage.getItem('user_name');
     const userRole = localStorage.getItem('user_role');
-    
+
+    // Для режиму "Всі" оренди — дашборд без статистики
+    if (currentDashboardType === 'Оренда') {
+      const grid = document.getElementById('dashboardGrid');
+      if (grid) grid.innerHTML = '<div style="text-align:center; color:#888; padding:1rem;">Оберіть конкретний тип оренди для перегляду статистики</div>';
+      document.getElementById('totalLeads').textContent = '-';
+      document.getElementById('totalBudget').textContent = '-';
+      return;
+    }
+
     console.log('loadStats: role=' + userRole + ', name=' + userName + ', type=' + currentDashboardType);
-    
+
     fetch(getScriptUrl(), {
       method: 'POST',
       body: JSON.stringify({
@@ -1388,11 +1416,16 @@
   
   function openAddLeadSidebar() {
     // ⭐ Якщо це тип Оренди — відкриваю сайдбар оренди
-    if (RENT_TYPES.includes(currentDashboardType)) {
+    if (isRentMode()) {
       openAddRentLeadSidebar();
       return;
     }
-    
+    // ⭐ Якщо Іпотека — окремий сайдбар
+    if (currentDashboardType === 'Іпотека') {
+      openAddMortgageLeadSidebar();
+      return;
+    }
+
     const sidebar = document.getElementById('addLeadSidebar');
     sidebar.style.transform = 'translateX(0)';
     document.body.style.overflow = 'hidden';
@@ -1407,9 +1440,10 @@
   // ⭐ ФУНКЦІЇ ДЛЯ САЙДБАРУ ДОДАВАННЯ ОРЕНДИ
   function openAddRentLeadSidebar() {
     const sidebar = document.getElementById('addRentLeadSidebar');
-    
-    // Встановлюю поточний тип оренди
-    document.getElementById('addRentType').value = currentDashboardType;
+
+    // Встановлюю поточний тип оренди (якщо "Всі" — ставлю Подобова за замовчуванням)
+    const rentType = currentDashboardType === 'Оренда' ? 'Подобова' : currentDashboardType;
+    document.getElementById('addRentType').value = rentType;
     
     // Завантажую менеджерів
     loadRentManagersForAdd();
@@ -1566,15 +1600,17 @@
       method: 'POST',
       body: JSON.stringify({
         action: 'softDeleteLead',
-        payload: { leadId: leadId, rowIndex: rowIndex ? parseInt(rowIndex) : null }
+        payload: { leadId: leadId, rowIndex: rowIndex ? parseInt(rowIndex) : null, type: currentDashboardType }
       })
     })
     .then(r => r.json())
     .then(result => {
       if (result.success) {
         // Скидаю кеш
-        if (RENT_TYPES.includes(currentDashboardType)) { cachedRentLeads = null; } else { cachedRealtyLeads = null; }
-        
+        if (currentDashboardType === 'Іпотека') { cachedMortgageLeads = null; }
+        else if (isRentMode()) { cachedRentLeads = null; }
+        else { cachedRealtyLeads = null; }
+
         loadLeadsWithCallback(() => {
           showSuccess('✅ Ліда видалено!');
         });
@@ -1665,16 +1701,25 @@
     const role = localStorage.getItem('user_role');
     const name = localStorage.getItem('user_name');
     const type = currentDashboardType;
-    
+
     // ⭐ Скидаю кеш — дані змінилися
-    if (RENT_TYPES.includes(type)) {
+    if (type === 'Іпотека') {
+      cachedMortgageLeads = null;
+    } else if (isRentMode()) {
       cachedRentLeads = null;
     } else {
       cachedRealtyLeads = null;
     }
-    
+
+    // Для режиму "Всі" оренди — використовую loadLeads
+    if (type === 'Оренда') {
+      loadLeads();
+      if (callback) callback();
+      return;
+    }
+
     console.log('Завантажую ліди для:', name, 'Роль:', role, 'Тип:', type);
-    
+
     fetch(getScriptUrl(), {
       method: 'POST',
       body: JSON.stringify({
@@ -1691,7 +1736,6 @@
         renderLeads(allLeads);
         populateFilters(allLeads);
       }
-      // ⭐ ВИКЛИКАЮ CALLBACK ПІСЛЯ ОНОВЛЕННЯ
       if (callback) callback();
     })
     .catch(e => {
@@ -1702,8 +1746,13 @@
 
   function renderLeads(leads) {
     // ⭐ Якщо це тип Оренди — використовую окрему функцію
-    if (RENT_TYPES.includes(currentDashboardType)) {
+    if (isRentMode()) {
       renderRentLeads(leads);
+      return;
+    }
+    // ⭐ Якщо Іпотека — окрема функція
+    if (currentDashboardType === 'Іпотека') {
+      renderMortgageLeads(leads);
       return;
     }
     
@@ -2339,6 +2388,319 @@
     });
   }
   
+  // ========== ІПОТЕКА: ФУНКЦІЇ ==========
+
+  // ⭐ Видимість колонок Іпотеки
+  let visibleMortgageColumns = { id: true, fullName: true, phone: true, manager: true, stage: true, nextContact: true, daysLeft: true, status: true };
+
+  function toggleMortgageColumn(col) {
+    visibleMortgageColumns[col] = !visibleMortgageColumns[col];
+    renderLeads(allLeads);
+  }
+
+  // ⭐ РЕНДЕР ТАБЛИЦІ ІПОТЕКИ
+  function renderMortgageLeads(leads) {
+    const tbody = document.getElementById('leadsTable');
+    const thead = document.getElementById('leadsTableHead');
+    const vc = visibleMortgageColumns;
+
+    // Заголовки
+    let headerHtml = '<tr>';
+    if (vc.id) headerHtml += '<th>ID</th>';
+    if (vc.fullName) headerHtml += '<th>ПІБ</th>';
+    if (vc.phone) headerHtml += '<th>Телефон</th>';
+    if (vc.manager) headerHtml += '<th>Менеджер</th>';
+    if (vc.stage) headerHtml += '<th>Етап</th>';
+    if (vc.nextContact) headerHtml += '<th>Контакт</th>';
+    if (vc.daysLeft) headerHtml += '<th>Днів</th>';
+    if (vc.status) headerHtml += '<th>Статус</th>';
+    headerHtml += '<th>Дії</th></tr>';
+    thead.innerHTML = headerHtml;
+
+    // Оновлюю чекбокси в модалці
+    Object.keys(vc).forEach(col => {
+      const cb = document.getElementById('mort-col-' + col);
+      if (cb) cb.checked = vc[col];
+    });
+
+    const stageEmoji = {
+      'Етап_1_Контакт': '1️⃣', 'Етап_2_Кваліфікація': '2️⃣', 'Етап_3_Подача_в_банк': '3️⃣',
+      'Етап_4_Схвалення_ліміту': '4️⃣', 'Етап_5_Підбір': '5️⃣', "Етап_6_Оцінка_об'єкта": '6️⃣',
+      'Етап_7_FIPER': '7️⃣', 'Етап_8_Нотаріус': '8️⃣', 'Етап_9_Після': '9️⃣'
+    };
+
+    function fmtDate(d) { return formatDateSafe(d); }
+
+    if (!leads || leads.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Немає лідів</td></tr>';
+      return;
+    }
+
+    leadsCache = leads;
+
+    // Сортування (нові зверху)
+    const sorted = [...leads].sort((a, b) => {
+      const aNew = isLeadNew(a) ? 0 : 1;
+      const bNew = isLeadNew(b) ? 0 : 1;
+      return aNew - bNew;
+    });
+
+    let html = '';
+    sorted.forEach((lead, i) => {
+      const stage = lead.stage || '';
+      const emoji = stageEmoji[stage] || '🔹';
+      const stageName = stage.replace(/Етап_\d+_/g, '').replace(/_/g, ' ');
+      const isNew = isLeadNew(lead);
+      const isUnassigned = !lead.manager || lead.manager === 'Не назначено';
+      let rowClass = '';
+      if (isNew) rowClass += ' lead-new';
+      if (isUnassigned) rowClass += ' lead-unassigned';
+
+      html += `<tr class="lead-row${rowClass}" data-lead-id="${lead.id}" data-index="${i}">`;
+      if (vc.id) html += `<td>${lead.id || ''}</td>`;
+      if (vc.fullName) html += `<td>${lead.fullName || '—'}</td>`;
+      if (vc.phone) html += `<td>${lead.phone || ''}</td>`;
+      if (vc.manager) html += `<td>${isUnassigned ? '<span style="color:red">❌ Не назначено</span>' : lead.manager}</td>`;
+      if (vc.stage) html += `<td>${emoji} ${stageName}</td>`;
+      if (vc.nextContact) html += `<td>${fmtDate(lead.nextContact)}</td>`;
+      if (vc.daysLeft) html += `<td>${lead.daysLeft || '—'}</td>`;
+      if (vc.status) {
+        const st = lead.status || '';
+        const stColor = st === 'ПРОСРОЧЕНО' ? 'red' : st === 'СКОРО' ? '#FFD700' : '#70AD47';
+        html += `<td style="color:${stColor}; font-weight:bold;">${st}</td>`;
+      }
+      html += `<td>
+        <button class="mort-details-btn" data-index="${i}" style="background:#8B5CF6;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;margin:1px;">📋</button>
+        <button class="mort-edit-btn" data-index="${i}" style="background:#4472C4;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;margin:1px;">✏️</button>
+        <button class="mort-delete-btn" data-id="${lead.id}" data-row="${lead.rowIndex}" style="background:#FF6B6B;color:white;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.75rem;margin:1px;">🗑</button>
+      </td>`;
+      html += '</tr>';
+
+      // Деталі (прихований рядок)
+      const colSpan = Object.values(vc).filter(v => v).length + 1;
+      html += `<tr class="details-row" id="mort-details-${i}" style="display:none;">
+        <td colspan="${colSpan}" style="padding:1rem; background:#f9f7ff;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.85rem;">
+            <div><b>🔗 Джерело:</b> ${lead.source || '—'}</div>
+            <div><b>🌐 Мова:</b> ${lead.language || '—'}</div>
+            <div><b>💰 Бюджет:</b> ${lead.budget || '—'}</div>
+            <div><b>🏛 Податкова резиденція:</b> ${lead.taxResidency || '—'}</div>
+            <div><b>💵 Дохід:</b> ${lead.income || '—'}</div>
+            <div><b>🌍 Країна доходу:</b> ${lead.incomeCountry || '—'}</div>
+            <div><b>📆 Коли планує:</b> ${lead.whenPlans || '—'}</div>
+            <div><b>👨‍👩‍👧 Дорослих:</b> ${lead.adults || '—'}</div>
+            <div><b>👶 Дітей:</b> ${lead.children || '—'}</div>
+            <div><b>📆 Дата додавання:</b> ${fmtDate(lead.dateAdded)}</div>
+          </div>
+          <div style="margin-top:0.5rem;"><b>💬 Коментар:</b> ${lead.comment || '—'}</div>
+        </td>
+      </tr>`;
+    });
+
+    tbody.innerHTML = html;
+
+    // Обробники кліків
+    tbody.querySelectorAll('.mort-details-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const idx = this.dataset.index;
+        const row = document.getElementById('mort-details-' + idx);
+        if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+      });
+    });
+
+    tbody.querySelectorAll('.mort-edit-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const lead = leadsCache[parseInt(this.dataset.index)];
+        if (lead) openEditSidebarMortgage(lead);
+      });
+    });
+
+    tbody.querySelectorAll('.mort-delete-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (confirm('Видалити цього ліда?')) {
+          softDeleteLead(this.dataset.id, this.dataset.row);
+        }
+      });
+    });
+
+    // Клік на рядок нового ліда — знімає сигнал
+    tbody.querySelectorAll('.lead-new').forEach(row => {
+      row.addEventListener('click', function() {
+        const id = this.dataset.leadId;
+        if (id) removeNewLeadSignal(id);
+      });
+    });
+  }
+
+  // ⭐ ВІДКРИТИ САЙДБАР РЕДАГУВАННЯ ІПОТЕКИ
+  function openEditSidebarMortgage(lead) {
+    console.log('📝 openEditSidebarMortgage:', lead);
+    const sidebar = document.getElementById('editSidebarMortgage');
+
+    document.getElementById('mortLeadId').value = lead.id || '';
+    document.getElementById('mortRowIndex').value = lead.rowIndex || '';
+    document.getElementById('mortLeadId_display').value = lead.id || '';
+    document.getElementById('mortFullName').value = lead.fullName || '';
+    document.getElementById('mortPhone').value = lead.phone || '';
+    document.getElementById('mortSource').value = lead.source || '';
+    document.getElementById('mortLanguage').value = lead.language || '';
+    document.getElementById('mortStage').value = lead.stage || 'Етап_1_Контакт';
+    document.getElementById('mortBudget').value = lead.budget || '';
+    document.getElementById('mortTaxResidency').value = lead.taxResidency || '';
+    document.getElementById('mortIncome').value = lead.income || '';
+    document.getElementById('mortIncomeCountry').value = lead.incomeCountry || '';
+    document.getElementById('mortWhenPlans').value = lead.whenPlans || '';
+    document.getElementById('mortAdults').value = lead.adults || '';
+    document.getElementById('mortChildren').value = lead.children || '';
+    document.getElementById('mortComment').value = lead.comment || '';
+    document.getElementById('mortNextContact').value = dateToInputValue(lead.nextContact);
+
+    // Завантажую менеджерів
+    loadMortgageManagers(lead.manager);
+
+    sidebar.style.transform = 'translateX(0)';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMortgageSidebar() {
+    document.getElementById('editSidebarMortgage').style.transform = 'translateX(100%)';
+    document.body.style.overflow = 'auto';
+  }
+
+  function loadMortgageManagers(currentManager) {
+    const select = document.getElementById('mortManager');
+    fetch(SCRIPT_URL_REALTY, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getAllUsers', payload: {} })
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.success && result.users) {
+        const mgrs = result.users.filter(u => u.role === 'Manager' || u.role === 'Admin').map(u => u.name).filter(n => n && n.trim());
+        select.innerHTML = '<option value="Не назначено">❌ Не назначено</option>';
+        mgrs.forEach(name => {
+          const sel = (name === currentManager) ? 'selected' : '';
+          select.innerHTML += `<option value="${name}" ${sel}>👤 ${name}</option>`;
+        });
+        if (currentManager && currentManager !== 'Не назначено' && !mgrs.includes(currentManager)) {
+          select.innerHTML += `<option value="${currentManager}" selected>👤 ${currentManager}</option>`;
+        }
+      }
+    }).catch(e => console.error('Помилка завантаження менеджерів:', e));
+  }
+
+  function handleSidebarEditMortgage(e) {
+    e.preventDefault();
+    const updateData = {
+      leadId: document.getElementById('mortLeadId').value,
+      rowIndex: document.getElementById('mortRowIndex').value ? parseInt(document.getElementById('mortRowIndex').value) : null,
+      fullName: document.getElementById('mortFullName').value,
+      phone: document.getElementById('mortPhone').value,
+      source: document.getElementById('mortSource').value,
+      language: document.getElementById('mortLanguage').value,
+      type: 'Іпотека',
+      manager: document.getElementById('mortManager').value,
+      stage: document.getElementById('mortStage').value,
+      nextContact: document.getElementById('mortNextContact').value,
+      budget: document.getElementById('mortBudget').value,
+      taxResidency: document.getElementById('mortTaxResidency').value,
+      income: document.getElementById('mortIncome').value,
+      incomeCountry: document.getElementById('mortIncomeCountry').value,
+      whenPlans: document.getElementById('mortWhenPlans').value,
+      adults: document.getElementById('mortAdults').value,
+      children: document.getElementById('mortChildren').value,
+      comment: document.getElementById('mortComment').value
+    };
+
+    showLoading('⏳ Зберігаю дані...');
+
+    fetch(SCRIPT_URL_REALTY, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateLead', payload: updateData })
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.success) {
+        closeMortgageSidebar();
+        cachedMortgageLeads = null;
+        loadLeadsWithCallback(() => { showSuccess('✅ Ліда оновлено!'); });
+      } else {
+        showError('❌ ' + (result.error || 'Невідома помилка'));
+      }
+    })
+    .catch(e => { showError('❌ Помилка мережі: ' + e.message); });
+  }
+
+  // ⭐ ДОДАВАННЯ ЛІДА ІПОТЕКИ
+  function openAddMortgageLeadSidebar() {
+    const sidebar = document.getElementById('addMortgageLeadSidebar');
+    // Завантажую менеджерів
+    const select = document.getElementById('addMortManager');
+    fetch(SCRIPT_URL_REALTY, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getAllUsers', payload: {} })
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.success && result.users) {
+        const mgrs = result.users.filter(u => u.role === 'Manager' || u.role === 'Admin').map(u => u.name).filter(n => n && n.trim());
+        select.innerHTML = '<option value="">-- Вибери менеджера --</option>';
+        mgrs.forEach(name => { select.innerHTML += `<option value="${name}">👤 ${name}</option>`; });
+      }
+    }).catch(e => console.error('Помилка:', e));
+
+    sidebar.style.transform = 'translateX(0)';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeAddMortgageLeadSidebar() {
+    document.getElementById('addMortgageLeadSidebar').style.transform = 'translateX(100%)';
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleAddMortgageLead(e) {
+    e.preventDefault();
+    const data = {
+      fullName: document.getElementById('addMortFullName').value,
+      phone: document.getElementById('addMortPhone').value,
+      source: document.getElementById('addMortSource').value,
+      language: document.getElementById('addMortLanguage').value,
+      type: 'Іпотека',
+      manager: document.getElementById('addMortManager').value,
+      budget: document.getElementById('addMortBudget').value,
+      taxResidency: document.getElementById('addMortTaxResidency').value,
+      income: document.getElementById('addMortIncome').value,
+      incomeCountry: document.getElementById('addMortIncomeCountry').value,
+      whenPlans: document.getElementById('addMortWhenPlans').value,
+      adults: document.getElementById('addMortAdults').value,
+      children: document.getElementById('addMortChildren').value,
+      comment: document.getElementById('addMortComment').value
+    };
+
+    showLoading('⏳ Додаю ліда...');
+
+    fetch(SCRIPT_URL_REALTY, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'addLead', payload: data })
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.success) {
+        closeAddMortgageLeadSidebar();
+        const form = document.querySelector('#addMortgageLeadSidebar form');
+        if (form) form.reset();
+        cachedMortgageLeads = null;
+        loadDataWithCallback(() => { showSuccess('✅ Ліда додано!'); });
+      } else {
+        showError('❌ ' + (result.error || 'Помилка'));
+      }
+    })
+    .catch(e => { showError('❌ Помилка: ' + e.message); });
+  }
+
   // ⭐ ФУНКЦІЯ ВИДАЛЕННЯ СИГНАЛУ НОВОГО ЛІДА
   function removeNewLeadSignal(leadId) {
     if (!leadId) return;
@@ -2571,16 +2933,26 @@
     const role = localStorage.getItem('user_role');
     const name = localStorage.getItem('user_name');
     const type = currentDashboardType;
-    
+
     // ⭐ Скидаю кеш — дані змінилися
-    if (RENT_TYPES.includes(type)) {
+    if (type === 'Іпотека') {
+      cachedMortgageLeads = null;
+    } else if (isRentMode()) {
       cachedRentLeads = null;
     } else {
       cachedRealtyLeads = null;
     }
-    
+
+    // Для режиму "Всі" оренди — використовую loadLeads
+    if (type === 'Оренда') {
+      loadLeads();
+      loadStats();
+      if (callback) callback();
+      return;
+    }
+
     console.log('📊 loadDataWithCallback: role=' + role + ', name=' + name + ', type=' + type);
-    
+
     fetch(getScriptUrl(), {
       method: 'POST',
       body: JSON.stringify({
@@ -2653,7 +3025,8 @@
         alert('✅ Збережено!');
         closeModal('editModal');
         // ⭐ Скидаю кеш — дані змінилися
-        if (RENT_TYPES.includes(currentDashboardType)) { cachedRentLeads = null; } else { cachedRealtyLeads = null; }
+        if (currentDashboardType === 'Іпотека') { cachedMortgageLeads = null; }
+        else if (isRentMode()) { cachedRentLeads = null; } else { cachedRealtyLeads = null; }
         // Оновлюємо дашборд і таблицю
         loadStats(); // Оновляємо дашборд
         loadLeads(); // Оновляємо таблицю лідів
@@ -2710,72 +3083,45 @@
 
   // ========== ВИБІР ТИПУ ДАШБОРДУ ТА КНОПКИ ==========
   
-  // ⭐ Типи оренди для визначення
-  const rentTypes = ['Подобова', 'Сезонна', 'Довгострокова', 'Управління'];
-  
   function selectDashboardType(type) {
     console.log('selectDashboardType:', type);
-    
-    // Закриваю dropdown якщо відкритий
-    closeRentDropdown();
-    
-    // Оновлюю активну кнопку
-    document.querySelectorAll('.type-pill').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    document.querySelectorAll('.rent-option').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    
-    // Визначаю яку кнопку активувати
-    if (rentTypes.includes(type)) {
-      // Це тип оренди — активую кнопку "Оренда" і відповідну опцію
-      document.getElementById('pill-Оренда').classList.add('active');
-      const rentOption = document.querySelector(`.rent-option[onclick*="${type}"]`);
-      if (rentOption) rentOption.classList.add('active');
-    } else {
-      // Звичайний тип — активую відповідну кнопку
-      const pill = document.getElementById('pill-' + type);
-      if (pill) pill.classList.add('active');
-    }
-    
-    // Встановлюю тип
-    currentDashboardType = type;
-    
-    // Визначаю emoji
-    let emoji = '🏢';
-    if (type === 'Продаж') emoji = '🏠';
-    else if (type === 'Подобова') emoji = '🌙';
-    else if (type === 'Сезонна') emoji = '☀️';
-    else if (type === 'Довгострокова') emoji = '📅';
-    else if (type === 'Управління') emoji = '🔑';
-    else if (type === 'Консультація') emoji = '💬';
-    
-    // Заголовок дашборду не змінюємо — завжди "Дашборд"
 
-    // Оновлюю заголовок таблиці
-    document.getElementById('leadsTitle').textContent = `📋 Ліди (${emoji} ${type})`;
-    
-    // Приховую меню вибору типу якщо воно видно
-    const menu = document.getElementById('dashboardTypeMenu');
-    if (menu) {
-      menu.style.display = 'none';
+    // Оновлюю активну кнопку
+    document.querySelectorAll('.type-pill').forEach(btn => btn.classList.remove('active'));
+    const pill = document.getElementById('pill-' + type);
+    if (pill) pill.classList.add('active');
+
+    // Показую/ховаю великі кнопки оренди
+    const rentBtns = document.getElementById('rentTypeButtons');
+    if (type === 'Оренда') {
+      if (rentBtns) rentBtns.style.display = 'block';
+      currentRentSubtype = 'Всі';
+      currentDashboardType = 'Оренда';
+      document.querySelectorAll('.rent-type-btn').forEach(b => b.classList.remove('active'));
+      const allBtn = document.getElementById('rentBtn-Всі');
+      if (allBtn) allBtn.classList.add('active');
+    } else {
+      if (rentBtns) rentBtns.style.display = 'none';
+      currentDashboardType = type;
     }
-    
-    // На мобілці — згортаємо дашборд і менеджерів при зміні типу
+
+    // Визначаю emoji
+    const emojiMap = { 'Купівля': '🏡', 'Продаж': '🏠', 'Оренда': '🏨', 'Іпотека': '🏦', 'Консультація': '💬', 'Подобова': '🌙', 'Сезонна': '☀️', 'Довгострокова': '📅', 'Управління': '🔑' };
+    const emoji = emojiMap[type] || '🏢';
+
+    document.getElementById('leadsTitle').textContent = `📋 Ліди (${emoji} ${type})`;
+
+    const menu = document.getElementById('dashboardTypeMenu');
+    if (menu) menu.style.display = 'none';
+
+    // На мобілці — згортаємо дашборд при зміні типу
     if (window.innerWidth <= 768) {
       const content = document.getElementById('dashboardContent');
       if (content && !content.classList.contains('collapsed')) {
         content.classList.add('collapsed');
         document.getElementById('toggleDashboard').textContent = '+';
       }
-      const mgContent = document.getElementById('managersContent');
-      if (mgContent) {
-        mgContent.style.display = 'none';
-        document.getElementById('toggleManagers').textContent = '+';
-      }
     } else {
-      // На десктопі — розгортаємо дашборд (як було)
       const content = document.getElementById('dashboardContent');
       if (content && content.classList.contains('collapsed')) {
         content.classList.remove('collapsed');
@@ -2783,39 +3129,31 @@
       }
     }
 
-    // Завантажу нові дані
     loadStats();
     loadLeads();
   }
-  
-  // ⭐ ФУНКЦІЇ ДЛЯ DROPDOWN ОРЕНДИ
-  function toggleRentDropdown() {
-    const dropdown = document.getElementById('rentDropdown');
-    dropdown.classList.toggle('open');
 
-    // На мобілці: позиціонуємо dropdown під кнопкою Оренда
-    if (dropdown.classList.contains('open') && window.innerWidth <= 768) {
-      const pill = document.getElementById('pill-Оренда');
-      const menu = document.getElementById('rentDropdownMenu');
-      if (pill && menu) {
-        const rect = pill.getBoundingClientRect();
-        menu.style.top = (rect.bottom + 6) + 'px';
-      }
+  // ⭐ ВИБІР ПІДТИПУ ОРЕНДИ (великі кнопки)
+  function selectRentSubtype(subtype) {
+    console.log('selectRentSubtype:', subtype);
+    currentRentSubtype = subtype;
+
+    document.querySelectorAll('.rent-type-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('rentBtn-' + subtype);
+    if (btn) btn.classList.add('active');
+
+    if (subtype === 'Всі') {
+      currentDashboardType = 'Оренда';
+      document.getElementById('leadsTitle').textContent = '📋 Ліди (🏨 Оренда — Всі)';
+    } else {
+      currentDashboardType = subtype;
+      const emojiMap = { 'Подобова': '🌙', 'Сезонна': '☀️', 'Довгострокова': '📅', 'Управління': '🔑' };
+      document.getElementById('leadsTitle').textContent = `📋 Ліди (${emojiMap[subtype] || '🏨'} ${subtype})`;
     }
+
+    loadStats();
+    loadLeads();
   }
-  
-  function closeRentDropdown() {
-    const dropdown = document.getElementById('rentDropdown');
-    if (dropdown) dropdown.classList.remove('open');
-  }
-  
-  // Закриваю dropdown при кліку поза ним
-  document.addEventListener('click', function(e) {
-    const dropdown = document.getElementById('rentDropdown');
-    if (dropdown && !dropdown.contains(e.target)) {
-      closeRentDropdown();
-    }
-  });
 
   function logout() {
     // ⭐ Видаляю тільки дані авторизації, НЕ viewedLeads
@@ -2879,9 +3217,10 @@
   }
 
   function toggleColumnSettings() {
-    // ⭐ Якщо це тип Оренди — показую модалку оренди
-    if (RENT_TYPES.includes(currentDashboardType)) {
+    if (isRentMode()) {
       document.getElementById('columnSettingsRentModal').classList.add('active');
+    } else if (currentDashboardType === 'Іпотека') {
+      document.getElementById('columnSettingsMortgageModal').classList.add('active');
     } else {
       document.getElementById('columnSettingsModal').classList.add('active');
     }
@@ -3053,7 +3392,27 @@
       { value: 'Етап_8_Виселення', label: 'Етап 8: Виселення' }
     ];
     
-    const stages = RENT_TYPES.includes(currentDashboardType) ? rentStages : realtyStages;
+    // Етапи для Іпотеки
+    const mortgageStages = [
+      { value: 'Етап_1_Контакт', label: 'Етап 1: Контакт' },
+      { value: 'Етап_2_Кваліфікація', label: 'Етап 2: Кваліфікація' },
+      { value: 'Етап_3_Подача_в_банк', label: 'Етап 3: Подача в банк' },
+      { value: 'Етап_4_Схвалення_ліміту', label: 'Етап 4: Схвалення ліміту' },
+      { value: 'Етап_5_Підбір', label: 'Етап 5: Підбір' },
+      { value: "Етап_6_Оцінка_об'єкта", label: "Етап 6: Оцінка об'єкта" },
+      { value: 'Етап_7_FIPER', label: 'Етап 7: FIPER' },
+      { value: 'Етап_8_Нотаріус', label: 'Етап 8: Нотаріус' },
+      { value: 'Етап_9_Після', label: 'Етап 9: Після' }
+    ];
+
+    let stages;
+    if (isRentMode()) {
+      stages = rentStages;
+    } else if (currentDashboardType === 'Іпотека') {
+      stages = mortgageStages;
+    } else {
+      stages = realtyStages;
+    }
     
     // Перезаповнюю меню етапів
     stageMenu.innerHTML = `
