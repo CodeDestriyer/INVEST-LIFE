@@ -5,7 +5,7 @@
   let leadsCache = [];
   
   // ⭐ API URLs
-  const SCRIPT_URL_REALTY = "https://script.google.com/macros/s/AKfycbzUFoaCa7dvOUrznW_0pHfV_W72jaNxD1Tw1fGCsoY_Q-mdNYjdOlxt_nbeFEDi2y_riw/exec";
+  const SCRIPT_URL_REALTY = "https://script.google.com/macros/s/AKfycby2GjefRHpLPVRqZNuYCVgvyepYic_WaPEn8v_OPP_ouHlAkbi0PnRC4e05j1JHGALYTQ/exec";
   const SCRIPT_URL_RENT = "https://script.google.com/macros/s/AKfycbxBw_QWtWEcwzYF55-vWXrMyZYoaa7PkCq14zrigNevX4BY4_CaHpkiWi8FFRzIJFo4/exec";
   
   // ⭐ Типи оренди
