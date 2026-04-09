@@ -303,7 +303,8 @@
     const normalizedId = String(lead.id || '').replace(/[\s\n\r]+/g, '').trim();
     
     // ДЛЯ МЕНЕДЖЕРА: лід "новий" якщо призначений йому і ще не переглянутий
-    if (userRole === 'Manager' && lead.manager === userName) {
+    var leadManagers = (lead.manager || '').split(',').map(function(s) { return s.trim(); });
+    if (userRole === 'Manager' && (lead.manager === userName || leadManagers.includes(userName))) {
       const viewKey = userName + '_' + normalizedId;
       if (!viewed.includes(viewKey)) {
         return true;
@@ -695,10 +696,11 @@
       return;
     }
     
-    // ⭐ Фільтрую ліди по вибраним менеджерам
+    // ⭐ Фільтрую ліди по вибраним менеджерам (підтримка мульти-менеджер)
     let filteredLeads = allLeads.filter(lead => {
-      const leadManager = lead.manager || 'Не назначено';
-      return selectedManagers.includes(leadManager);
+      const leadManagerStr = lead.manager || 'Не назначено';
+      const leadMgrs = leadManagerStr.split(',').map(s => s.trim());
+      return leadMgrs.some(m => selectedManagers.includes(m));
     });
     
     console.log(`📊 Фільтровано лідів: ${filteredLeads.length} з ${allLeads.length}`);
@@ -1283,6 +1285,39 @@
     }
   }
 
+  // ⭐ МУЛЬТИ-МЕНЕДЖЕР: хелпери для checkbox-вибору кількох менеджерів
+  function renderManagerCheckboxes(selectId, managersList, currentManagerStr) {
+    const select = document.getElementById(selectId);
+    select.style.display = 'none';
+
+    let container = document.getElementById(selectId + 'Checkboxes');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = selectId + 'Checkboxes';
+      select.parentNode.insertBefore(container, select.nextSibling);
+    }
+
+    const selected = (currentManagerStr || '').split(',').map(s => s.trim()).filter(s => s && s !== 'Не назначено');
+
+    let html = '<div style="border: 1px solid #ddd; border-radius: 4px; padding: 0.5rem; max-height: 150px; overflow-y: auto; background: white;">';
+    managersList.forEach(m => {
+      const checked = selected.includes(m) ? 'checked' : '';
+      html += '<label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.2rem; cursor: pointer; font-size: 0.9rem;">' +
+        '<input type="checkbox" class="mgr-multi" value="' + m + '" ' + checked + '>' +
+        '<span>👤 ' + m + '</span></label>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function getSelectedManagersValue(selectId) {
+    const container = document.getElementById(selectId + 'Checkboxes');
+    if (!container) return document.getElementById(selectId).value || 'Не назначено';
+    const checked = container.querySelectorAll('.mgr-multi:checked');
+    const names = Array.from(checked).map(cb => cb.value);
+    return names.length > 0 ? names.join(', ') : 'Не назначено';
+  }
+
   // ⭐ ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ МЕТА/ТИП В ЗАЛЕЖНОСТІ ВІД ТИПУ
   function openEditSidebar(lead) {
     console.log('📝 openEditSidebar: Відкриваю редагування ліда:', lead);
@@ -1312,27 +1347,17 @@
     document.getElementById('sidebarNextAction').value = lead.nextAction || '';
     document.getElementById('sidebarComment').value = lead.comment || '';
     
-    // Заповнюю список менеджерів
-    const managerSelect = document.getElementById('sidebarManager');
-    managerSelect.innerHTML = '<option value="Не назначено">❌ Не назначено</option>';
-    
-    console.log('📋 openEditSidebar: managers =', managers);
-    
-    // ⭐ РЕЗЕРВНИЙ ВАРІАНТ: якщо managers порожній - беремо з allLeads
+    // ⭐ МУЛЬТИ-МЕНЕДЖЕР: заповнюю checkbox-ами замість dropdown
     let managersList = managers && managers.length > 0 ? [...managers] : [];
-    
+
     if (managersList.length === 0 && allLeads && allLeads.length > 0) {
-      console.log('⚠️ managers порожній - беру унікальних менеджерів з allLeads');
       managersList = [...new Set(
-        allLeads
-          .map(l => l.manager)
-          .filter(m => m && m !== 'Не назначено' && m.trim() !== '')
+        allLeads.map(l => l.manager).filter(m => m && m !== 'Не назначено' && m.trim() !== '')
+          .flatMap(m => m.split(',').map(s => s.trim()))
       )];
     }
-    
-    // ⭐ ЯКЩО ВСЕ ЩЕ ПОРОЖНЬО - завантажую з API
+
     if (managersList.length === 0) {
-      console.log('⚠️ Завантажую менеджерів з API...');
       fetch(SCRIPT_URL, {
         method: 'POST',
         body: JSON.stringify({ action: 'getAllUsers', payload: {} })
@@ -1344,34 +1369,13 @@
             .filter(u => u.role === 'Manager' || u.role === 'Admin')
             .map(u => u.name)
             .filter(name => name && name.trim() !== '');
-          
-          console.log('✅ Завантажено менеджерів з API:', apiManagers);
-          
-          apiManagers.forEach(m => {
-            const option = document.createElement('option');
-            option.value = m;
-            option.textContent = '👤 ' + m;
-            managerSelect.appendChild(option);
-          });
-          
-          // Встановлюю поточного менеджера
-          managerSelect.value = lead.manager || 'Не назначено';
+          renderManagerCheckboxes('sidebarManager', apiManagers, lead.manager);
         }
       })
       .catch(e => console.error('❌ Помилка завантаження менеджерів:', e));
     } else {
-      // Додаю менеджерів зі списку
-      managersList.forEach(m => {
-        const option = document.createElement('option');
-        option.value = m;
-        option.textContent = '👤 ' + m;
-        managerSelect.appendChild(option);
-      });
-      
-      managerSelect.value = lead.manager || 'Не назначено';
+      renderManagerCheckboxes('sidebarManager', managersList, lead.manager);
     }
-    
-    console.log('📋 Менеджери в dropdown:', managersList);
     
     // Заповнюю Мета/тип
     document.getElementById('sidebarMetaType').value = lead.metaType || '';
@@ -1623,7 +1627,7 @@
       source: document.getElementById('sidebarSource').value,
       language: document.getElementById('sidebarLanguage').value,
       type: document.getElementById('sidebarType').value,
-      manager: document.getElementById('sidebarManager').value || 'Не назначено',
+      manager: getSelectedManagersValue('sidebarManager'),
       stage: document.getElementById('sidebarStage').value,
       nextContact: document.getElementById('sidebarNextContact').value,
       budget: document.getElementById('sidebarBudget').value,
@@ -2216,9 +2220,7 @@
   }
   
   function loadRentManagers(currentManager) {
-    const select = document.getElementById('rentManager');
-    
-    // ⭐ Беру менеджерів з таблиці Нерухомість → доступи
+    // ⭐ МУЛЬТИ-МЕНЕДЖЕР: checkbox-и замість dropdown
     fetch(SCRIPT_URL_REALTY, {
       method: 'POST',
       body: JSON.stringify({ action: 'getAllUsers', payload: {} })
@@ -2230,17 +2232,7 @@
           .filter(u => u.role === 'Manager' || u.role === 'Admin')
           .map(u => u.name)
           .filter(name => name && name.trim() !== '');
-        
-        select.innerHTML = '<option value="Не назначено">❌ Не назначено</option>';
-        rentManagers.forEach(name => {
-          const selected = (name === currentManager) ? 'selected' : '';
-          select.innerHTML += `<option value="${name}" ${selected}>👤 ${name}</option>`;
-        });
-        
-        // Якщо менеджер не в списку, додаємо його
-        if (currentManager && currentManager !== 'Не назначено' && !rentManagers.includes(currentManager)) {
-          select.innerHTML += `<option value="${currentManager}" selected>👤 ${currentManager}</option>`;
-        }
+        renderManagerCheckboxes('rentManager', rentManagers, currentManager);
       }
     })
     .catch(e => {
@@ -2269,7 +2261,7 @@
       source: document.getElementById('rentSource').value,
       language: document.getElementById('rentLanguage').value,
       type: document.getElementById('rentType').value,
-      manager: document.getElementById('rentManager').value,
+      manager: getSelectedManagersValue('rentManager'),
       stage: document.getElementById('rentStage').value,
       nextContact: document.getElementById('rentNextContact').value,
       contactTime: document.getElementById('rentContactTime').value,
@@ -2562,7 +2554,7 @@
   }
 
   function loadMortgageManagers(currentManager) {
-    const select = document.getElementById('mortManager');
+    // ⭐ МУЛЬТИ-МЕНЕДЖЕР: checkbox-и замість dropdown
     fetch(SCRIPT_URL_REALTY, {
       method: 'POST',
       body: JSON.stringify({ action: 'getAllUsers', payload: {} })
@@ -2571,14 +2563,7 @@
     .then(result => {
       if (result.success && result.users) {
         const mgrs = result.users.filter(u => u.role === 'Manager' || u.role === 'Admin').map(u => u.name).filter(n => n && n.trim());
-        select.innerHTML = '<option value="Не назначено">❌ Не назначено</option>';
-        mgrs.forEach(name => {
-          const sel = (name === currentManager) ? 'selected' : '';
-          select.innerHTML += `<option value="${name}" ${sel}>👤 ${name}</option>`;
-        });
-        if (currentManager && currentManager !== 'Не назначено' && !mgrs.includes(currentManager)) {
-          select.innerHTML += `<option value="${currentManager}" selected>👤 ${currentManager}</option>`;
-        }
+        renderManagerCheckboxes('mortManager', mgrs, currentManager);
       }
     }).catch(e => console.error('Помилка завантаження менеджерів:', e));
   }
@@ -2593,7 +2578,7 @@
       source: document.getElementById('mortSource').value,
       language: document.getElementById('mortLanguage').value,
       type: 'Іпотека',
-      manager: document.getElementById('mortManager').value,
+      manager: getSelectedManagersValue('mortManager'),
       stage: document.getElementById('mortStage').value,
       nextContact: document.getElementById('mortNextContact').value,
       budget: document.getElementById('mortBudget').value,
@@ -3288,7 +3273,7 @@
   // ========== СИНХРОНІЗАЦІЯ ГОРИЗОНТАЛЬНОГО СКРОЛУ ==========
   function populateFilters() {
     // Збираю унікальні менеджери, статуси, джерела з лідів
-    const managers = [...new Set(allLeads.map(l => l.manager).filter(Boolean))].sort();
+    const managers = [...new Set(allLeads.flatMap(l => (l.manager || '').split(',').map(s => s.trim())).filter(Boolean))].sort();
     const statuses = [...new Set(allLeads.map(l => l.status).filter(Boolean))].sort();
     const sources = [...new Set(allLeads.map(l => l.source).filter(Boolean))].sort();
 
@@ -3876,11 +3861,11 @@
       filtered = filtered.filter(l => selectedStages.includes(l.stage));
     }
 
-    // ⭐ ВИПРАВЛЕНО: Фільтр по менеджерам (з чекбоксів бокової панелі)
+    // ⭐ ВИПРАВЛЕНО: Фільтр по менеджерам (підтримка мульти-менеджер)
     if (filterTableManagers.length > 0) {
       filtered = filtered.filter(l => {
-        const leadManager = l.manager || 'Не назначено';
-        return filterTableManagers.includes(leadManager);
+        const leadMgrs = (l.manager || 'Не назначено').split(',').map(s => s.trim());
+        return leadMgrs.some(m => filterTableManagers.includes(m));
       });
     }
 

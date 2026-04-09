@@ -627,8 +627,9 @@ function getLeads(manager, type) {
       // ФІЛЬТР ПО ТИПУ
       if (leadType !== type) continue;
 
-      // ФІЛЬТР ПО МЕНЕДЖЕРУ
-      if (leadManager === manager || leadManager == manager) {
+      // ФІЛЬТР ПО МЕНЕДЖЕРУ (підтримка кількох менеджерів через кому)
+      var leadManagers = String(leadManager || '').split(',').map(function(s) { return s.trim(); });
+      if (leadManager === manager || leadManager == manager || leadManagers.indexOf(manager) !== -1) {
         leads.push(builder(row, i + 2));
       }
     }
@@ -764,7 +765,9 @@ function getAllLeadsNoFilter(manager, userRole, sheetType) {
       const row = data[i];
       if (!row || !row[0]) continue;
 
-      if (userRole === 'Admin' || row[managerCol] === manager || row[managerCol] == manager) {
+      var cellManager = String(row[managerCol] || '');
+      var cellManagers = cellManager.split(',').map(function(s) { return s.trim(); });
+      if (userRole === 'Admin' || cellManager === manager || cellManager == manager || cellManagers.indexOf(manager) !== -1) {
         leads.push(builder(row, i + 2));
       }
     }
