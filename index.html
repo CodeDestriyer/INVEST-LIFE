@@ -257,21 +257,37 @@
                 </span>
             </div>
 
-            <div class="dashboard-grid" id="dashboardGrid">
-                <div class="loading">⏳ Завантажаю статистику...</div>
-            </div>
-
-            <!-- ⭐ СТАТИСТИКА ПО ДЖЕРЕЛАМ (тільки для адміна) -->
-            <div class="source-stats-block" id="sourceStatsBlock" style="display: none;">
-                <div class="source-stats-header">
-                    <h3 class="source-stats-title">📱 Джерела лідів</h3>
-                    <div class="source-stats-periods" id="sourceStatsPeriods">
-                        <button type="button" class="period-btn" data-period="7">7 днів</button>
-                        <button type="button" class="period-btn active" data-period="30">30 днів</button>
-                        <button type="button" class="period-btn" data-period="all">Весь час</button>
+            <!-- ⭐ ПІД-ДАШБОРД: ЕТАПИ ПРОДАЖ (згорнутий за замовчуванням) -->
+            <div class="sub-dashboard" id="stagesSubDashboard">
+                <button type="button" class="sub-dashboard-header" onclick="toggleSubDashboard('stages')" id="stagesSubToggle">
+                    <span class="sub-dashboard-title">📊 Етапи продаж</span>
+                    <span class="sub-dashboard-arrow">▸</span>
+                </button>
+                <div class="sub-dashboard-body collapsed" id="stagesSubBody">
+                    <div class="dashboard-grid" id="dashboardGrid">
+                        <div class="loading">⏳ Завантажаю статистику...</div>
                     </div>
                 </div>
-                <div id="sourceStatsContent"></div>
+            </div>
+
+            <!-- ⭐ ПІД-ДАШБОРД: ДЖЕРЕЛА ЛІДІВ (тільки Admin, згорнутий за замовчуванням) -->
+            <div class="sub-dashboard" id="sourcesSubDashboard" style="display: none;">
+                <button type="button" class="sub-dashboard-header" onclick="toggleSubDashboard('sources')" id="sourcesSubToggle">
+                    <span class="sub-dashboard-title">📱 Джерела лідів</span>
+                    <span class="sub-dashboard-arrow">▸</span>
+                </button>
+                <div class="sub-dashboard-body collapsed" id="sourcesSubBody">
+                    <div class="source-stats-block" id="sourceStatsBlock">
+                        <div class="source-stats-header">
+                            <div class="source-stats-periods" id="sourceStatsPeriods">
+                                <button type="button" class="period-btn" data-period="7">7 днів</button>
+                                <button type="button" class="period-btn active" data-period="30">30 днів</button>
+                                <button type="button" class="period-btn" data-period="all">Весь час</button>
+                            </div>
+                        </div>
+                        <div id="sourceStatsContent"></div>
+                    </div>
+                </div>
             </div>
         </div>
 

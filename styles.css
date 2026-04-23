@@ -436,30 +436,76 @@
             display: none;
         }
 
-        /* ⭐ СТАТИСТИКА ДЖЕРЕЛ ЛІДІВ */
-        .source-stats-block {
-            margin-top: 1.5rem;
+        /* ⭐ ПІД-ДАШБОРДИ (Етапи продаж, Джерела лідів) */
+        .sub-dashboard {
+            margin-top: 1rem;
             background: white;
             border-radius: 10px;
-            padding: 1.25rem 1.5rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e8e8e8;
+            border: 1px solid #e0e6ed;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .sub-dashboard-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            background: #f7f9fc;
+            border: none;
+            border-bottom: 1px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            transition: background 0.15s ease;
+        }
+
+        .sub-dashboard-header:hover {
+            background: #eef2f7;
+        }
+
+        .sub-dashboard.expanded .sub-dashboard-header {
+            border-bottom-color: #e0e6ed;
+            background: #eef4fb;
+        }
+
+        .sub-dashboard-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .sub-dashboard-arrow {
+            color: #4472C4;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .sub-dashboard.expanded .sub-dashboard-arrow {
+            transform: rotate(90deg);
+        }
+
+        .sub-dashboard-body {
+            padding: 1rem 1.25rem;
+        }
+
+        .sub-dashboard-body.collapsed {
+            display: none;
+        }
+
+        /* ⭐ СТАТИСТИКА ДЖЕРЕЛ ЛІДІВ */
+        .source-stats-block {
+            background: white;
+            padding: 0;
         }
 
         .source-stats-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .source-stats-title {
-            margin: 0;
-            font-size: 1.05rem;
-            color: #333;
-            font-weight: 600;
         }
 
         .source-stats-periods {

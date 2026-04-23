@@ -1119,18 +1119,33 @@
     renderSourceStats();
   }
 
+  function toggleSubDashboard(key) {
+    const map = {
+      stages: { wrap: 'stagesSubDashboard', body: 'stagesSubBody' },
+      sources: { wrap: 'sourcesSubDashboard', body: 'sourcesSubBody' }
+    };
+    const ids = map[key];
+    if (!ids) return;
+    const wrap = document.getElementById(ids.wrap);
+    const body = document.getElementById(ids.body);
+    if (!wrap || !body) return;
+    const willExpand = body.classList.contains('collapsed');
+    body.classList.toggle('collapsed', !willExpand);
+    wrap.classList.toggle('expanded', willExpand);
+  }
+
   function renderSourceStats() {
-    const block = document.getElementById('sourceStatsBlock');
+    const sub = document.getElementById('sourcesSubDashboard');
     const content = document.getElementById('sourceStatsContent');
-    if (!block || !content) return;
+    if (!sub || !content) return;
 
     // Видимий тільки адміну
     const role = localStorage.getItem('user_role');
     if (role !== 'Admin') {
-      block.style.display = 'none';
+      sub.style.display = 'none';
       return;
     }
-    block.style.display = 'block';
+    sub.style.display = '';
 
     if (!allLeads || allLeads.length === 0) {
       content.innerHTML = '<div class="source-stats-empty">📭 Немає лідів для аналізу</div>';
@@ -1158,14 +1173,25 @@
       return;
     }
 
-    // Групую по джерелу
-    const counts = {};
+    // Групую по нормалізованому джерелу (case/пробіли не важливі),
+    // але відображаю найчастіший оригінальний варіант написання.
+    // Наприклад, "Instagram" + "instagram" → ключ "instagram", показую "Instagram".
+    const groups = {}; // key → { total, variants: { "Instagram": 5, "instagram": 2 } }
     filtered.forEach(l => {
-      const src = (l.source && String(l.source).trim()) || '(без джерела)';
-      counts[src] = (counts[src] || 0) + 1;
+      const raw = (l.source && String(l.source).trim()) || '';
+      const key = raw ? raw.toLocaleLowerCase() : '__empty__';
+      const display = raw || '(без джерела)';
+      if (!groups[key]) groups[key] = { total: 0, variants: {} };
+      groups[key].total++;
+      groups[key].variants[display] = (groups[key].variants[display] || 0) + 1;
     });
 
-    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const entries = Object.entries(groups)
+      .map(([key, g]) => {
+        const topVariant = Object.entries(g.variants).sort((a, b) => b[1] - a[1])[0][0];
+        return [topVariant, g.total];
+      })
+      .sort((a, b) => b[1] - a[1]);
     const total = filtered.length;
     const maxCount = entries[0][1];
 
@@ -1867,16 +1893,16 @@
     // ⭐ ОНОВЛЮЮ ЗАГОЛОВКИ ДЛЯ НЕРУХОМОСТІ (з урахуванням видимості)
     thead.innerHTML = `
       <tr>
-        ${vc.id !== false ? '<th style="width:8%">ID</th>' : ''}
-        ${vc.fullName !== false ? '<th style="width:10%">ПІБ</th>' : ''}
-        ${vc.phone !== false ? '<th style="width:11%">Телефон</th>' : ''}
-        ${vc.type !== false ? '<th style="width:7%">Тип</th>' : ''}
-        ${vc.manager !== false ? '<th style="width:9%">Менеджер</th>' : ''}
-        ${vc.stage !== false ? '<th style="width:11%">Поточний Етап</th>' : ''}
-        ${vc.nextContact !== false ? '<th style="width:10%">Наступний контакт</th>' : ''}
-        ${vc.daysLeft !== false ? '<th style="width:6%">Днів залиш.</th>' : ''}
-        ${vc.status !== false ? '<th style="width:10%">Статус заявки</th>' : ''}
-        ${vc.leadStatus !== false ? '<th style="width:9%">Статус ліда</th>' : ''}
+        ${vc.id !== false ? '<th style="width:6%">ID</th>' : ''}
+        ${vc.fullName !== false ? '<th style="width:9%">ПІБ</th>' : ''}
+        ${vc.phone !== false ? '<th style="width:10%">Телефон</th>' : ''}
+        ${vc.type !== false ? '<th style="width:6%">Тип</th>' : ''}
+        ${vc.manager !== false ? '<th style="width:8%">Менеджер</th>' : ''}
+        ${vc.stage !== false ? '<th style="width:9%">Поточний Етап</th>' : ''}
+        ${vc.nextContact !== false ? '<th style="width:8%">Наступний контакт</th>' : ''}
+        ${vc.daysLeft !== false ? '<th style="width:5%">Днів залиш.</th>' : ''}
+        ${vc.status !== false ? '<th style="width:7%">Статус заявки</th>' : ''}
+        ${vc.leadStatus !== false ? '<th style="width:8%">Статус ліда</th>' : ''}
         <th style="width:auto">Дії</th>
       </tr>
     `;
