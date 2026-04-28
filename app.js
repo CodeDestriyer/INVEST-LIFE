@@ -1621,6 +1621,7 @@
       language: document.getElementById('addRentLanguage').value || 'Українська',
       type: document.getElementById('addRentType').value,
       manager: document.getElementById('addRentManager').value || 'Не назначено',
+      leadStatus: document.getElementById('addRentLeadStatus').value,
       budget: document.getElementById('addRentBudget').value,
       roomsCondition: document.getElementById('addRentRoomsCondition').value,
       petsFormat: document.getElementById('addRentPetsFormat').value,
@@ -2149,6 +2150,7 @@
         ${vc.nextContact !== false ? '<th style="width:10%">Наступний контакт</th>' : ''}
         ${vc.daysLeft !== false ? '<th style="width:6%">Днів залиш.</th>' : ''}
         ${vc.status !== false ? '<th style="width:10%">Статус</th>' : ''}
+        ${vc.leadStatus !== false ? '<th style="width:8%">Статус ліда</th>' : ''}
         <th style="width:auto">Дії</th>
       </tr>
     `;
@@ -2217,6 +2219,7 @@
           ${vc.nextContact !== false ? `<td>${fmtDate(lead.nextContact)}</td>` : ''}
           ${vc.daysLeft !== false ? `<td>${lead.daysLeft || '—'}</td>` : ''}
           ${vc.status !== false ? `<td>${lead.status || '—'}</td>` : ''}
+          ${vc.leadStatus !== false ? `<td>${lead.leadStatus || '—'}</td>` : ''}
           <td style="min-width:200px">
             <div class="lead-actions">
               <button class="btn-details-realty" data-index="${index}">▼ Деталі</button>
@@ -2341,6 +2344,7 @@
     document.getElementById('rentLanguage').value = lead.language || 'Українська';
     document.getElementById('rentType').value = lead.type || 'Подобова';
     document.getElementById('rentStage').value = lead.stage || 'Етап_1_Контакт';
+    document.getElementById('rentLeadStatus').value = lead.leadStatus || 'активний';
     document.getElementById('rentBudget').value = lead.budget || '';
     document.getElementById('rentRoomsCondition').value = lead.roomsCondition || '';
     document.getElementById('rentPetsFormat').value = lead.petsFormat || '';
@@ -2413,6 +2417,7 @@
       type: document.getElementById('rentType').value,
       manager: getSelectedManagersValue('rentManager'),
       stage: document.getElementById('rentStage').value,
+      leadStatus: document.getElementById('rentLeadStatus').value,
       nextContact: document.getElementById('rentNextContact').value,
       contactTime: document.getElementById('rentContactTime').value,
       budget: document.getElementById('rentBudget').value,
@@ -3355,7 +3360,7 @@
   // ⭐ Окремий об'єкт для видимості колонок Оренди
   let visibleRentColumns = JSON.parse(localStorage.getItem('visibleRentColumns')) || {
     id: true, fullName: true, phone: true, type: true, manager: true, stage: true,
-    nextContact: true, daysLeft: true, status: true
+    nextContact: true, daysLeft: true, status: true, leadStatus: true
   };
 
   // ⭐ Окремий об'єкт для видимості колонок Нерухомості
