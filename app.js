@@ -2141,15 +2141,15 @@
 
     thead.innerHTML = `
       <tr>
-        ${vc.id !== false ? '<th style="width:8%">ID</th>' : ''}
-        ${vc.fullName !== false ? '<th style="width:10%">ПІБ</th>' : ''}
-        ${vc.phone !== false ? '<th style="width:11%">Телефон</th>' : ''}
-        ${vc.type !== false ? '<th style="width:7%">Тип</th>' : ''}
-        ${vc.manager !== false ? '<th style="width:9%">Менеджер</th>' : ''}
-        ${vc.stage !== false ? '<th style="width:11%">Поточний Етап</th>' : ''}
-        ${vc.nextContact !== false ? '<th style="width:10%">Наступний контакт</th>' : ''}
-        ${vc.daysLeft !== false ? '<th style="width:6%">Днів залиш.</th>' : ''}
-        ${vc.status !== false ? '<th style="width:10%">Статус</th>' : ''}
+        ${vc.id !== false ? '<th style="width:6%">ID</th>' : ''}
+        ${vc.fullName !== false ? '<th style="width:9%">ПІБ</th>' : ''}
+        ${vc.phone !== false ? '<th style="width:10%">Телефон</th>' : ''}
+        ${vc.type !== false ? '<th style="width:6%">Тип</th>' : ''}
+        ${vc.manager !== false ? '<th style="width:8%">Менеджер</th>' : ''}
+        ${vc.stage !== false ? '<th style="width:9%">Поточний Етап</th>' : ''}
+        ${vc.nextContact !== false ? '<th style="width:8%">Наступний контакт</th>' : ''}
+        ${vc.daysLeft !== false ? '<th style="width:5%">Днів залиш.</th>' : ''}
+        ${vc.status !== false ? '<th style="width:7%">Статус</th>' : ''}
         ${vc.leadStatus !== false ? '<th style="width:8%">Статус ліда</th>' : ''}
         <th style="width:auto">Дії</th>
       </tr>
